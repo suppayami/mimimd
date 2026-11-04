@@ -48,7 +48,7 @@ export async function renderDiagrams(
 				throw new Error('Diagram directives and click actions are disabled.')
 			}
 
-			const { svg } = await mermaid.render(`diagram-${++counter}`, source)
+			const { svg } = await mermaid.render(`diagram-${++counter}`, source, block)
 			if (!current()) {
 				return
 			}

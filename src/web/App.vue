@@ -10,7 +10,7 @@ const route = useRoute()
 const router = useRouter()
 
 const index = shallowRef<DocumentIndex>()
-const document = shallowRef<RenderedDocument>()
+const document = shallowRef<RenderedDocument & { path: string }>()
 const error = ref('')
 const filter = ref('')
 const filesOpen = ref(false)
@@ -70,24 +70,8 @@ async function refresh() {
 			return
 		}
 
-		const changedDocument = loadedPath !== active.value
-		const scroll = window.scrollY
-		loadedPath = active.value
-		document.value = result
+		document.value = { ...result, path: active.value }
 		error.value = ''
-
-		await nextTick()
-		if (!changedDocument) {
-			window.scrollTo(0, scroll)
-			return
-		}
-
-		if (route.hash) {
-			await scrollToHeading()
-			return
-		}
-
-		window.scrollTo(0, 0)
 	} catch (failure) {
 		if (token !== generation) {
 			return
@@ -98,9 +82,29 @@ async function refresh() {
 	}
 }
 
+async function onDocumentRendered(path: string, scroll: number) {
+	if (path !== active.value) {
+		return
+	}
+
+	const changedDocument = loadedPath !== path
+	loadedPath = path
+	if (!changedDocument) {
+		window.scrollTo(0, scroll)
+		return
+	}
+
+	if (route.hash) {
+		await scrollToHeading()
+		return
+	}
+
+	window.scrollTo(0, 0)
+}
+
 async function scrollToHeading() {
 	await nextTick()
-	if (route.hash) {
+	if (loadedPath === active.value && route.hash) {
 		window.document.getElementById(decodeURIComponent(route.hash.slice(1)))?.scrollIntoView()
 	}
 }
@@ -248,7 +252,14 @@ onUnmounted(() => {
 			<p v-if="error" role="status">
 				{{ error }}
 			</p>
-			<MarkdownView v-else-if="document" :html="document.html" :revision="revision" />
+			<MarkdownView
+				v-else-if="document"
+				:html="document.html"
+				:path="document.path"
+				:active-path="active"
+				:revision="revision"
+				@rendered="onDocumentRendered"
+			/>
 			<p v-else role="status">Loading document…</p>
 		</main>
 		<nav

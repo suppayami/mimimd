@@ -9,6 +9,7 @@
 	},
 	"files": [
 		"dist",
+		"docs/architecture.md",
 		"docs/theme-attribution.md"
 	],
 	"engines": {

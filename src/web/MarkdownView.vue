@@ -81,34 +81,84 @@ watch(
 	bottom: 1rem;
 	padding: 0.4rem 0.7rem;
 	background: var(--surface);
-	border: 1px solid var(--fg);
-	border-radius: 0.3rem;
+	border: 1px solid var(--border);
+	border-radius: 0.5rem;
 	font-size: 0.85rem;
 	z-index: 1;
 }
 article {
 	overflow-wrap: anywhere;
 	min-width: 0;
-}
-article :deep(h1) {
-	font-size: 2.25rem;
-	line-height: 1.25;
+	font: 1.125rem/1.8 var(--ui-font);
 }
 article :deep(h1),
 article :deep(h2),
+article :deep(h3),
+article :deep(h4),
+article :deep(h5),
+article :deep(h6) {
+	font-family: var(--ui-font);
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: -0.025em;
+	color: var(--teal);
+	scroll-margin-top: 8rem;
+	margin: 1.75rem 0 0.75rem;
+}
+article :deep(h1) {
+	font-family: var(--ui-font);
+	font-size: clamp(2.5rem, 4vw, 3.5rem);
+	letter-spacing: -0.045em;
+	color: var(--red);
+	margin: 0 0 1.25rem;
+}
+article :deep(h2) {
+	font-size: 1.55rem;
+	color: var(--heading);
+	margin-top: 2.5rem;
+}
 article :deep(h3) {
-	scroll-margin-top: 5rem;
+	font-size: 1.2rem;
+}
+article :deep(p) {
+	margin: 0 0 1.25rem;
+}
+article :deep(li) {
+	margin-block: 0.4rem;
+}
+article :deep(li::marker) {
+	color: var(--heading);
+}
+article :deep(a:hover) {
+	color: var(--teal);
+	text-decoration-thickness: 2px;
+}
+article :deep(hr) {
+	border: 0;
+	border-top: 1px solid var(--border);
+	margin-block: 2rem;
 }
 article :deep(pre) {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
 	overflow-x: auto;
 	padding: 1.25rem;
+	border: 1px solid var(--border);
 	border-radius: 0.5rem;
-	line-height: 1.6;
+	line-height: 1.75;
 	background: var(--surface);
+	margin-block: 1.5rem;
 }
 article :deep(code) {
-	font-family: ui-monospace, monospace;
-	font-size: 0.9em;
+	font-family: var(--mono-font);
+	font-size: 0.8em;
+}
+article :deep(:not(pre) > code) {
+	padding: 0.15rem 0.35rem;
+	border-radius: 0.25rem;
+	background: var(--surface);
+	color: var(--plum);
+	box-decoration-break: clone;
 }
 article :deep(img),
 article :deep(svg) {
@@ -120,20 +170,38 @@ article :deep(table) {
 	display: block;
 	overflow-x: auto;
 	border-collapse: collapse;
+	font: 0.875rem/1.7 var(--ui-font);
+	margin-block: 1.5rem;
+	text-align: left;
+}
+article :deep(th) {
+	background: var(--surface);
+	color: var(--heading);
+	font-weight: 650;
 }
 article :deep(th),
 article :deep(td) {
-	padding: 0.5rem 0.8rem;
-	border: 1px solid var(--fg);
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--border);
 }
 article :deep(blockquote) {
-	border-left: 0.2rem solid var(--fg);
-	margin-left: 0;
-	padding-left: 1.2rem;
+	border-left: 3px solid var(--yellow);
+	margin: 1.75rem 0;
+	padding: 0.25rem 0 0.25rem 1.5rem;
+	color: var(--gold);
+	font-style: italic;
+}
+article :deep(blockquote > p:last-child) {
+	margin-bottom: 0;
 }
 article :deep(.katex-display) {
 	overflow-x: auto;
 	overflow-y: hidden;
+}
+@media (max-width: 1000px) {
+	article :deep(:is(h1, h2, h3, h4, h5, h6)) {
+		scroll-margin-top: 10rem;
+	}
 }
 article.dark :deep(.shiki),
 article.dark :deep(.shiki span) {

@@ -1,6 +1,15 @@
 :root {
-	font-family: system-ui, sans-serif;
+	font-family: var(--ui-font);
 	color-scheme: light dark;
+	--ui-font: 'Inter Variable', system-ui, sans-serif;
+	--mono-font: 'Hack', ui-monospace, monospace;
+	--heading: #486b50;
+	--teal: #356c68;
+	--link: #216b94;
+	--plum: #8b4779;
+	--gold: #8b681e;
+	--border: color-mix(in srgb, var(--fg) 20%, var(--bg));
+	--active: color-mix(in srgb, var(--green) 15%, var(--bg));
 }
 * {
 	box-sizing: border-box;
@@ -10,30 +19,46 @@ body {
 	background: var(--bg);
 	color: var(--fg);
 	line-height: 1.7;
+	-webkit-font-smoothing: antialiased;
 }
 button,
 input {
 	font: inherit;
 	color: inherit;
 	background: var(--surface);
-	border: 1px solid currentColor;
-	border-radius: 0.3rem;
-	padding: 0.35rem 0.6rem;
+	border: 1px solid var(--border);
+	border-radius: 0.5rem;
+	padding: 0.5rem 0.75rem;
 }
 button,
 a {
 	cursor: pointer;
 }
 a {
-	color: inherit;
+	color: var(--link);
 	text-underline-offset: 0.2em;
 }
+button:hover {
+	background: var(--active);
+}
+input::placeholder {
+	color: var(--fg);
+}
+::selection {
+	background: var(--active);
+	color: var(--heading);
+}
 :focus-visible {
-	outline: 3px solid var(--fg);
+	outline: 2px solid var(--link);
 	outline-offset: 3px;
 }
 [data-theme='dark'] {
 	color-scheme: dark;
+	--heading: var(--green);
+	--teal: var(--blue);
+	--link: #8ac7ce;
+	--plum: var(--purple);
+	--gold: var(--yellow);
 }
 [data-theme='light'] {
 	color-scheme: light;

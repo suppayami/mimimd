@@ -33,7 +33,7 @@ export async function renderDiagrams(
 			lineColor: p.fg,
 			secondaryColor: p.bg,
 			tertiaryColor: p.surface,
-			fontFamily: 'system-ui',
+			fontFamily: '"Inter Variable", system-ui, sans-serif',
 		},
 	})
 

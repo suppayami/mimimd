@@ -10,6 +10,7 @@ import { watch } from 'chokidar'
 import { Hono } from 'hono'
 import { renderMarkdown } from '../markdown/render.js'
 import { isExcluded, isMarkdown } from './files.js'
+import { GitIgnore } from './gitignore.js'
 
 const types: Record<string, string> = {
 	'.png': 'image/png',
@@ -116,9 +117,13 @@ export async function startServer(scope: FileScope, host = 'localhost', port = 6
 	app.get('/api/index', async (c) => c.json(await scope.index()))
 
 	app.get('/api/document', async (c) => {
-		const index = await scope.index()
-		const document = c.req.query('path') ?? index.defaultDocument
-		if (!document || !index.documents.includes(document)) {
+		const document = c.req.query('path') ?? (await scope.index()).defaultDocument
+		if (
+			!document ||
+			!isMarkdown(document) ||
+			(scope.selected !== null && document !== scope.selected) ||
+			(!scope.recursive && document.includes('/'))
+		) {
 			return c.text('Document unavailable', 404)
 		}
 
@@ -195,56 +200,91 @@ export async function startServer(scope: FileScope, host = 'localhost', port = 6
 		}
 	}
 
-	const watcher = watch([scope.root, ...ignoreFiles], {
-		ignoreInitial: true,
-		followSymlinks: false,
-		ignored: (file, stat) => {
-			if (ignoreFiles.has(file)) {
+	let ignores = new GitIgnore(scope.ignoreRoot)
+	const createWatcher = () =>
+		watch([scope.root, ...ignoreFiles], {
+			ignoreInitial: true,
+			followSymlinks: false,
+			ignored: (file, stat) => {
+				if (ignoreFiles.has(file)) {
+					return false
+				}
+
+				const relative = path.relative(scope.root, file)
+				if (!relative) {
+					return false
+				}
+
+				const parts = relative.split(path.sep)
+				if (parts.at(-1) === '.gitignore' && !parts.slice(0, -1).some(isExcluded)) {
+					return false
+				}
+
+				if (parts.some(isExcluded)) {
+					return true
+				}
+
+				if (stat && ignores.isIgnored(file, stat.isDirectory())) {
+					return true
+				}
+
+				if (scope.selected && stat?.isFile()) {
+					return (
+						parts.join('/') !== scope.selected &&
+						!types[path.extname(file).toLowerCase()]
+					)
+				}
+
+				if (!scope.recursive && stat?.isFile() && parts.length > 1) {
+					return !types[path.extname(file).toLowerCase()]
+				}
+
+				if (stat?.isFile()) {
+					return !isMarkdown(file) && !types[path.extname(file).toLowerCase()]
+				}
+
 				return false
-			}
+			},
+		})
 
-			const relative = path.relative(scope.root, file)
-			if (!relative) {
-				return false
-			}
-
-			const parts = relative.split(path.sep)
-			if (parts.at(-1) === '.gitignore' && !parts.slice(0, -1).some(isExcluded)) {
-				return false
-			}
-
-			if (parts.some(isExcluded)) {
-				return true
-			}
-
-			if (scope.selected && stat?.isFile()) {
-				return (
-					parts.join('/') !== scope.selected && !types[path.extname(file).toLowerCase()]
-				)
-			}
-
-			if (!scope.recursive && stat?.isFile() && parts.length > 1) {
-				return !types[path.extname(file).toLowerCase()]
-			}
-
-			if (stat?.isFile()) {
-				return !isMarkdown(file) && !types[path.extname(file).toLowerCase()]
-			}
-
-			return false
-		},
-	})
-
+	let watcher = createWatcher()
 	let timer: ReturnType<typeof setTimeout> | undefined
-	watcher.on('all', () => {
+	let closed = false
+	let rebuild = Promise.resolve()
+
+	const notify = () => {
 		clearTimeout(timer)
 		timer = setTimeout(() => {
 			for (const client of clients) {
 				client.enqueue(new TextEncoder().encode('data: change\n\n'))
 			}
 		}, 100)
-	})
+	}
 
+	const onChange = (_event: string, file: string) => {
+		if (path.basename(file) !== '.gitignore') {
+			notify()
+			return
+		}
+
+		// Rewalk with fresh rules so newly unignored directories gain watches too.
+		rebuild = rebuild.then(async () => {
+			await watcher.close()
+			if (closed) {
+				return
+			}
+
+			ignores = new GitIgnore(scope.ignoreRoot)
+			watcher = createWatcher()
+			watcher.on('all', onChange)
+			await new Promise<void>((resolve) => watcher.once('ready', resolve))
+			if (!closed) {
+				notify()
+			}
+		})
+	}
+
+	watcher.on('all', onChange)
 	await new Promise<void>((resolve) => watcher.once('ready', resolve))
 
 	return {
@@ -254,7 +294,9 @@ export async function startServer(scope: FileScope, host = 'localhost', port = 6
 		}`,
 
 		async close() {
+			closed = true
 			clearTimeout(timer)
+			await rebuild
 			await watcher.close()
 
 			for (const client of clients) {

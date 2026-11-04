@@ -178,13 +178,10 @@ watch(
 )
 
 onMounted(() => {
-	void refresh()
+	// The server sends "ready" on every connection, including reconnects.
 	events = new EventSource('/events')
 	events.onmessage = () => {
 		revision.value++
-		void refresh()
-	}
-	events.onopen = () => {
 		void refresh()
 	}
 })

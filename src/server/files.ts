@@ -53,7 +53,7 @@ export class FileScope {
 			root,
 			stat.isDirectory() ? null : path.basename(absolute),
 			recursive,
-			await GitIgnore.findRoot(root),
+			GitIgnore.findRoot(root),
 		)
 		if (scope.selected) {
 			await scope.read(scope.selected)
@@ -90,7 +90,7 @@ export class FileScope {
 			}
 		}
 
-		if (await ignores.isIgnored(current, (await lstat(current)).isDirectory())) {
+		if (ignores.isIgnored(current, (await lstat(current)).isDirectory())) {
 			throw new Error('Unavailable path')
 		}
 
@@ -136,7 +136,7 @@ export class FileScope {
 		}
 
 		const ignores = new GitIgnore(this.ignoreRoot)
-		if (await ignores.isIgnored(this.root, true)) {
+		if (ignores.isIgnored(this.root, true)) {
 			throw new Error('Unavailable path')
 		}
 
@@ -159,8 +159,18 @@ export class FileScope {
 					continue
 				}
 
+				if (
+					item.isDirectory()
+						? !this.recursive || this.selected !== null
+						: !item.isFile() ||
+							!isMarkdown(item.name) ||
+							(this.selected !== null && item.name !== this.selected)
+				) {
+					continue
+				}
+
 				const relative = prefix ? `${prefix}/${item.name}` : item.name
-				if (await ignores.isIgnored(path.join(this.root, relative), item.isDirectory())) {
+				if (ignores.isIgnored(path.join(this.root, relative), item.isDirectory())) {
 					continue
 				}
 

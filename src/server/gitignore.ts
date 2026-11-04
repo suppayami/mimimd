@@ -1,5 +1,4 @@
-import { constants } from 'node:fs'
-import { lstat, open } from 'node:fs/promises'
+import { closeSync, constants, lstatSync, openSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
 interface Rule {
@@ -157,9 +156,9 @@ function parseRules(source: string): Rule[] {
 	return rules
 }
 
-async function statIfPresent(target: string) {
+function statIfPresent(target: string) {
 	try {
-		return await lstat(target)
+		return lstatSync(target)
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
 			return null
@@ -170,14 +169,15 @@ async function statIfPresent(target: string) {
 }
 
 export class GitIgnore {
-	private readonly rules = new Map<string, Promise<Rule[]>>()
+	private readonly rules = new Map<string, Rule[]>()
+	private readonly decisions = new Map<string, boolean>()
 
 	constructor(private readonly root: string) {}
 
-	static async findRoot(directory: string) {
+	static findRoot(directory: string) {
 		let current = directory
 		while (true) {
-			if (await statIfPresent(path.join(current, '.git'))) {
+			if (statIfPresent(path.join(current, '.git'))) {
 				return current
 			}
 
@@ -190,37 +190,45 @@ export class GitIgnore {
 		}
 	}
 
-	private async load(directory: string) {
-		let rules = this.rules.get(directory)
-		if (!rules) {
-			rules = (async () => {
-				const matcher: Rule[] = []
-				const target = path.join(directory, '.gitignore')
-				if (!(await statIfPresent(target))?.isFile()) {
-					return matcher
-				}
-
-				const handle = await open(target, constants.O_RDONLY | constants.O_NOFOLLOW)
-				try {
-					return parseRules(await handle.readFile('utf8'))
-				} finally {
-					await handle.close()
-				}
-			})()
-			this.rules.set(directory, rules)
+	private load(directory: string) {
+		const cached = this.rules.get(directory)
+		if (cached) {
+			return cached
 		}
 
+		let rules: Rule[] = []
+		const target = path.join(directory, '.gitignore')
+		if (statIfPresent(target)?.isFile()) {
+			const handle = openSync(target, constants.O_RDONLY | constants.O_NOFOLLOW)
+			try {
+				rules = parseRules(readFileSync(handle, 'utf8'))
+			} finally {
+				closeSync(handle)
+			}
+		}
+
+		this.rules.set(directory, rules)
 		return rules
 	}
 
-	async isIgnored(target: string, directory: boolean) {
+	// Chokidar's ignore predicate must be synchronous. Each instance is a snapshot;
+	// recreate it when ignore files change, or for a fresh index/direct read.
+	isIgnored(target: string, directory: boolean) {
 		const segments = path.relative(this.root, target).split(path.sep).filter(Boolean)
 		const ancestors: { directory: string; matcher: Rule[] }[] = []
 		let current = this.root
 		for (const [index, segment] of segments.entries()) {
-			ancestors.push({ directory: current, matcher: await this.load(current) })
+			ancestors.push({ directory: current, matcher: this.load(current) })
 			current = path.join(current, segment)
 			const isDirectory = index < segments.length - 1 || directory
+			const cached = isDirectory ? this.decisions.get(current) : undefined
+			if (cached === true) {
+				return true
+			}
+			if (cached === false) {
+				continue
+			}
+
 			let ignored = false
 			for (const ancestor of ancestors) {
 				const relative = path
@@ -232,6 +240,10 @@ export class GitIgnore {
 						ignored = !rule.negated
 					}
 				}
+			}
+
+			if (isDirectory) {
+				this.decisions.set(current, ignored)
 			}
 
 			// Git cannot re-include children of an excluded directory.

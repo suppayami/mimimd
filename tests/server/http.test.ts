@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rename, symlink, writeFile } from 'node:fs/promises'
 import { request } from 'node:http'
 import path from 'node:path'
-import { afterAll, beforeAll, expect, it } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { FileScope } from '../../src/server/files'
 import { startServer } from '../../src/server/http'
 let app: Awaited<ReturnType<typeof startServer>>
@@ -40,6 +40,7 @@ it('rejects excluded documents, hidden entries, symlinks, executable assets and 
 		'/api/document?path=link.md',
 		'/api/document?path=.hidden.md',
 		'/content/code.js',
+		'/api/document?path=code.js',
 		'/api/document?path=ignored.md',
 		'/content/ignored.svg',
 		'/content/%2ehidden.md',
@@ -66,6 +67,27 @@ it('rejects excluded documents, hidden entries, symlinks, executable assets and 
 	expect(svg.headers.get('content-type')).toBe('image/svg+xml')
 	expect(svg.headers.get('content-security-policy')).toContain('sandbox')
 })
+it('limits document requests to the selected file while allowing nested assets', async () => {
+	const root = await mkdtemp(path.resolve('tests/.selected-http-'))
+	await mkdir(path.join(root, '.git'))
+	await mkdir(path.join(root, 'nested'))
+	await writeFile(path.join(root, 'README.md'), '# Selected')
+	await writeFile(path.join(root, 'other.md'), '# Other')
+	await writeFile(path.join(root, 'nested', 'image.svg'), '<svg/>')
+	const server = await startServer(
+		await FileScope.create(path.join(root, 'README.md')),
+		'127.0.0.1',
+		0,
+	)
+	try {
+		expect((await fetch(`${server.url}/api/document?path=README.md`)).status).toBe(200)
+		expect((await fetch(`${server.url}/api/document?path=other.md`)).status).toBe(404)
+		expect((await fetch(`${server.url}/content/nested/image.svg`)).status).toBe(200)
+	} finally {
+		await server.close()
+	}
+})
+
 it('rejects malformed and encoded traversal before normalization', async () => {
 	for (const target of ['/content/%zz', '/content/%2e%2e/README.md', '/content/..%5cREADME.md']) {
 		const status = await new Promise<number>((resolve) => {
@@ -136,6 +158,66 @@ it.each(['recursive', 'shallow', 'file'] as const)(
 	},
 	10000,
 )
+
+it('ignores excluded tree changes and resumes watching after rules change', async () => {
+	const root = await mkdtemp(path.resolve('tests/.watch-ignore-'))
+	await mkdir(path.join(root, '.git'))
+	await mkdir(path.join(root, 'generated', 'deep'), { recursive: true })
+	await writeFile(path.join(root, '.gitignore'), 'generated/\n')
+	await writeFile(path.join(root, 'README.md'), '# Home')
+	const document = path.join(root, 'generated', 'deep', 'guide.md')
+	await writeFile(document, '# Generated')
+	const server = await startServer(await FileScope.create(root), '127.0.0.1', 0)
+	const controller = new AbortController()
+	const messages: string[] = []
+	const response = await fetch(`${server.url}/events`, { signal: controller.signal })
+	const reader = response.body!.getReader()
+	await reader.read()
+	const consume = (async () => {
+		try {
+			while (true) {
+				const { value, done } = await reader.read()
+				if (done) {return}
+				messages.push(new TextDecoder().decode(value))
+			}
+		} catch (error) {
+			if (!controller.signal.aborted) {throw error}
+		}
+	})()
+
+	try {
+		await writeFile(document, '# Ignored edit')
+		await new Promise((resolve) => setTimeout(resolve, 300))
+		expect(messages).toEqual([])
+		expect(
+			(await fetch(`${server.url}/api/document?path=generated/deep/guide.md`)).status,
+		).toBe(404)
+
+		await writeFile(path.join(root, '.gitignore'), '# Include generated\n')
+		await vi.waitFor(() => expect(messages.join('')).toContain('change'))
+		expect((await fetch(`${server.url}/api/index`)).status).toBe(200)
+		messages.length = 0
+		await writeFile(document, '# Visible edit')
+		await vi.waitFor(() => expect(messages.join('')).toContain('change'))
+		expect(
+			await (await fetch(`${server.url}/api/document?path=generated/deep/guide.md`)).json(),
+		).toMatchObject({
+			headings: [{ text: 'Visible edit' }],
+		})
+
+		messages.length = 0
+		await writeFile(path.join(root, '.gitignore'), 'generated/\n')
+		await vi.waitFor(() => expect(messages.join('')).toContain('change'))
+		messages.length = 0
+		await writeFile(document, '# Ignored again')
+		await new Promise((resolve) => setTimeout(resolve, 300))
+		expect(messages).toEqual([])
+	} finally {
+		controller.abort()
+		await consume
+		await server.close()
+	}
+})
 
 it('delivers filesystem changes over SSE', async () => {
 	const controller = new AbortController()

@@ -32,7 +32,7 @@ Proposed public interface:
 pnpm dlx mimimd README.md
 pnpm dlx mimimd ./docs
 pnpm dlx mimimd ./docs --no-recursive
-pnpm dlx mimimd ./docs --host 0.0.0.0 --port 3000
+pnpm dlx mimimd ./docs --host 0.0.0.0 --port 6395
 pnpm dlx mimimd ./docs --open
 pnpm dlx mimimd --help
 pnpm dlx mimimd --version
@@ -40,7 +40,7 @@ pnpm dlx mimimd --version
 
 - Require one file or directory argument. Resolve it against the caller's working directory.
 - Accept `.md` and `.markdown`, case-insensitively.
-- Default to localhost and port 3000. If the port is occupied, fail with an actionable message; do not silently change ports.
+- Default to localhost and port 6395. If the port is occupied, fail with an actionable message; do not silently change ports.
 - `--open` opens the browser only after the server starts. It is off by default.
 - Folder scanning is recursive unless `--no-recursive` is set.
 - Print the served root and URL at startup. Warn that LAN mode has no authentication.

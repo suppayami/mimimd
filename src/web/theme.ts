@@ -1,4 +1,5 @@
 import { ref, watch } from 'vue'
+
 export const theme = ref<'light' | 'dark'>(
 	localStorage.getItem('mimimd-theme') === 'dark'
 		? 'dark'
@@ -8,6 +9,7 @@ export const theme = ref<'light' | 'dark'>(
 				? 'dark'
 				: 'light',
 )
+
 watch(
 	theme,
 	(value) => {
@@ -15,6 +17,7 @@ watch(
 	},
 	{ immediate: true },
 )
+
 export function toggleTheme() {
 	theme.value = theme.value === 'dark' ? 'light' : 'dark'
 	localStorage.setItem('mimimd-theme', theme.value)

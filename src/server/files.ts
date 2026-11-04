@@ -5,14 +5,17 @@ import path from 'node:path'
 import process from 'node:process'
 
 export const isMarkdown = (name: string) => /\.(?:md|markdown)$/i.test(name)
+
 export const isExcluded = (name: string) =>
 	name.startsWith('.') || name === 'node_modules' || name === 'secrets' || name.endsWith('.key')
+
 export class FileScope {
 	private constructor(
 		readonly root: string,
 		readonly selected: string | null,
 		readonly recursive: boolean,
 	) {}
+
 	static async create(input: string, recursive = true) {
 		const absolute = path.resolve(input)
 		if (
@@ -52,9 +55,12 @@ export class FileScope {
 		if (scope.selected) {
 			await scope.read(scope.selected)
 		}
+
 		await scope.index()
+
 		return scope
 	}
+
 	async checked(relative: string) {
 		if (
 			(await lstat(this.root)).isSymbolicLink() ||
@@ -62,6 +68,7 @@ export class FileScope {
 		) {
 			throw new Error('Unavailable path')
 		}
+
 		const segments = relative.split('/')
 		if (
 			!relative ||
@@ -71,6 +78,7 @@ export class FileScope {
 		) {
 			throw new Error('Unavailable path')
 		}
+
 		let current = this.root
 		for (const segment of segments) {
 			current = path.join(current, segment)
@@ -78,11 +86,14 @@ export class FileScope {
 				throw new Error('Unavailable path')
 			}
 		}
+
 		return current
 	}
+
 	async read(relative: string) {
 		const target = await this.checked(relative)
 		const handle = await open(target, constants.O_RDONLY | constants.O_NOFOLLOW)
+
 		try {
 			// Revalidate after opening; the opened inode must still be the checked file.
 			const actual = await this.checked(relative)
@@ -93,6 +104,7 @@ export class FileScope {
 			) {
 				throw new Error('Unavailable path')
 			}
+
 			if (
 				!opened.isFile() ||
 				opened.ino !== named.ino ||
@@ -101,11 +113,13 @@ export class FileScope {
 			) {
 				throw new Error('Unavailable path')
 			}
+
 			return await handle.readFile()
 		} finally {
 			await handle.close()
 		}
 	}
+
 	async index(): Promise<DocumentIndex> {
 		if (
 			(await lstat(this.root)).isSymbolicLink() ||
@@ -113,22 +127,26 @@ export class FileScope {
 		) {
 			throw new Error('Unavailable path')
 		}
+
 		const documents: string[] = []
 		const scan = async (prefix: string): Promise<Entry[]> => {
 			const names = await readdir(prefix ? await this.checked(prefix) : this.root, {
 				withFileTypes: true,
 			})
+
 			names.sort(
 				(a, b) =>
 					Number(b.isDirectory()) - Number(a.isDirectory()) ||
 					a.name.localeCompare(b.name, 'en') ||
 					(a.name < b.name ? -1 : 1),
 			)
+
 			const entries: Entry[] = []
 			for (const item of names) {
 				if (isExcluded(item.name) || item.isSymbolicLink()) {
 					continue
 				}
+
 				const relative = prefix ? `${prefix}/${item.name}` : item.name
 				if (item.isDirectory() && this.recursive && !this.selected) {
 					const children = await scan(relative)
@@ -136,6 +154,7 @@ export class FileScope {
 						entries.push({ name: item.name, path: relative, children })
 					}
 				}
+
 				if (
 					item.isFile() &&
 					isMarkdown(item.name) &&
@@ -145,12 +164,15 @@ export class FileScope {
 					entries.push({ name: item.name, path: relative })
 				}
 			}
+
 			return entries
 		}
+
 		const tree = await scan('')
 		const preferred = ['readme.md', 'index.md']
 			.map((name) => documents.find((p) => p.toLowerCase() === name))
 			.find(Boolean)
+
 		return {
 			mode: this.selected ? 'file' : 'folder',
 			tree,

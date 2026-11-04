@@ -15,6 +15,7 @@
 
 ## Coding Styles
 
+- Separate major definitions (functions, classes, interfaces, and similar declarations) with a blank line.
 - Add blank lines between logical blocks in long functions to keep the code easy to read.
 - Prefer early returns over `else` and `else if` where applicable. Use early returns to reduce nesting and keep control flow clear.
 

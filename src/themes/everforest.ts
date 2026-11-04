@@ -1,4 +1,5 @@
 import type { ThemeRegistration } from 'shiki'
+
 export const palettes = {
 	light: {
 		bg: '#fdf6e3',
@@ -21,8 +22,10 @@ export const palettes = {
 		yellow: '#dbbc7f',
 	},
 }
+
 export const themes: ThemeRegistration[] = (['light', 'dark'] as const).map((mode) => {
 	const p = palettes[mode]
+
 	return {
 		name: `everforest-medium-${mode}`,
 		type: mode,

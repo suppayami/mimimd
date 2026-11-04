@@ -1,20 +1,23 @@
 import { parseArgs } from 'node:util'
+
 export function parseArguments(args: string[]) {
 	const { values, positionals } = parseArgs({
 		args,
 		allowPositionals: true,
 		options: {
 			host: { type: 'string', default: 'localhost' },
-			port: { type: 'string', default: '3000' },
+			port: { type: 'string', default: '6395' },
 			'no-recursive': { type: 'boolean' },
 			open: { type: 'boolean' },
 			help: { type: 'boolean', short: 'h' },
 			version: { type: 'boolean', short: 'v' },
 		},
 	})
+
 	if (values.help || values.version) {
-		return { ...values, input: '', port: 3000, recursive: true }
+		return { ...values, input: '', port: 6395, recursive: true }
 	}
+
 	if (positionals.length !== 1) {
 		throw new Error('Provide exactly one Markdown file or directory. Use --help for usage.')
 	}

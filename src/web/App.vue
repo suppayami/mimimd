@@ -5,8 +5,10 @@ import { useRoute, useRouter } from 'vue-router'
 import FileTree from './FileTree.vue'
 import MarkdownView from './MarkdownView.vue'
 import { theme, toggleTheme } from './theme'
+
 const route = useRoute()
 const router = useRouter()
+
 const index = shallowRef<DocumentIndex>()
 const document = shallowRef<RenderedDocument>()
 const error = ref('')
@@ -16,25 +18,31 @@ const headingsOpen = ref(false)
 const fileButton = ref<HTMLButtonElement>()
 const headingButton = ref<HTMLButtonElement>()
 const revision = ref(0)
+
 const active = computed(() =>
 	route.path.startsWith('/doc/')
 		? route.path.slice(5).split('/').map(decodeURIComponent).join('/')
 		: '',
 )
+
 let generation = 0
 let loadedPath: string | undefined
 let events: EventSource | undefined
+
 async function refresh() {
 	const token = ++generation
+
 	try {
 		const response = await fetch('/api/index')
 		if (!response.ok) {
 			throw new Error('Unable to load document list.')
 		}
+
 		const nextIndex = (await response.json()) as DocumentIndex
 		if (token !== generation) {
 			return
 		}
+
 		index.value = nextIndex
 		if (route.path === '/' && nextIndex.defaultDocument) {
 			await router.replace(
@@ -45,19 +53,23 @@ async function refresh() {
 			)
 			return
 		}
+
 		if (!nextIndex.documents.length && !active.value) {
 			document.value = undefined
 			error.value = 'No Markdown documents found.'
 			return
 		}
+
 		const content = await fetch(`/api/document?path=${encodeURIComponent(active.value)}`)
 		if (!content.ok) {
 			throw new Error('Document unavailable. Select another document from the file list.')
 		}
+
 		const result = (await content.json()) as RenderedDocument
 		if (token !== generation) {
 			return
 		}
+
 		const changedDocument = loadedPath !== active.value
 		const scroll = window.scrollY
 		loadedPath = active.value
@@ -69,50 +81,61 @@ async function refresh() {
 			window.scrollTo(0, scroll)
 			return
 		}
+
 		if (route.hash) {
 			await scrollToHeading()
 			return
 		}
+
 		window.scrollTo(0, 0)
 	} catch (failure) {
 		if (token !== generation) {
 			return
 		}
+
 		document.value = undefined
 		error.value = (failure as Error).message
 	}
 }
+
 async function scrollToHeading() {
 	await nextTick()
 	if (route.hash) {
 		window.document.getElementById(decodeURIComponent(route.hash.slice(1)))?.scrollIntoView()
 	}
 }
+
 async function toggleFiles() {
 	filesOpen.value = !filesOpen.value
 	if (!filesOpen.value) {
 		return
 	}
+
 	await nextTick()
 	window.document.getElementById('filter')?.focus()
 }
+
 async function toggleHeadings() {
 	headingsOpen.value = !headingsOpen.value
 	if (!headingsOpen.value) {
 		return
 	}
+
 	await nextTick()
 	const navigation = window.document.getElementById('headings')
 	navigation?.querySelector<HTMLElement>('a, button')?.focus()
 }
+
 function closeFiles() {
 	filesOpen.value = false
 	fileButton.value?.focus()
 }
+
 function closeHeadings() {
 	headingsOpen.value = false
 	headingButton.value?.focus()
 }
+
 function navigate(event: MouseEvent) {
 	const link = (event.target as Element).closest('a')
 	if (
@@ -125,6 +148,7 @@ function navigate(event: MouseEvent) {
 	) {
 		return
 	}
+
 	const url = new URL(link.href)
 	if (
 		url.origin === location.origin &&
@@ -134,18 +158,21 @@ function navigate(event: MouseEvent) {
 		void router.push(url.pathname + url.search + url.hash)
 	}
 }
+
 watch(
 	() => route.path,
 	() => {
 		void refresh()
 	},
 )
+
 watch(
 	() => route.hash,
 	() => {
 		void scrollToHeading()
 	},
 )
+
 onMounted(() => {
 	void refresh()
 	events = new EventSource('/events')
@@ -157,6 +184,7 @@ onMounted(() => {
 		void refresh()
 	}
 })
+
 onUnmounted(() => {
 	generation++
 	events?.close()

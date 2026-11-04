@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { Entry } from '../contracts'
+
 defineProps<{ entries: Entry[]; active: string; filter: string }>()
 defineEmits<{ select: [] }>()
+
 const href = (path: string) => `/doc/${path.split('/').map(encodeURIComponent).join('/')}`
+
 const matches = (entry: Entry, filter: string): boolean =>
 	entry.path.toLowerCase().includes(filter.toLowerCase()) ||
 	!!entry.children?.some((child) => matches(child, filter))

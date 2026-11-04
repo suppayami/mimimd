@@ -2,12 +2,15 @@
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { renderDiagrams } from './diagrams'
 import { theme } from './theme'
+
 const props = defineProps<{ html: string; revision: number }>()
 const article = ref<HTMLElement>()
 let generation = 0
+
 onBeforeUnmount(() => {
 	generation++
 })
+
 watch(
 	() => [props.html, props.revision, theme.value],
 	async () => {
@@ -16,6 +19,7 @@ watch(
 		if (!article.value) {
 			return
 		}
+
 		article.value.innerHTML = props.html
 		for (const image of article.value.querySelectorAll('img')) {
 			const url = new URL(image.src)
@@ -24,6 +28,7 @@ watch(
 				image.src = url.href
 			}
 		}
+
 		await renderDiagrams(article.value, theme.value, () => token === generation)
 	},
 	{ immediate: true },

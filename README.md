@@ -1,6 +1,6 @@
 # mimimd
 
-A local Markdown reader built with Vue 3.5 and a Hono Node server. Requires Node **>=26.13.0**.
+A local Markdown reader built with Vue 3.5 and a Hono Node server. Requires Node **>=24**.
 
 ```sh
 pnpm install
@@ -13,7 +13,7 @@ node dist/cli.js ./docs --host 0.0.0.0 --port 6395
 node dist/cli.js ./docs --open
 ```
 
-Once published, `pnpm dlx mimimd <file-or-folder>` runs without a user build step. Publication and registry-name availability are not confirmed.
+Once published, `pnpm dlx @suppayami/mimimd <file-or-folder>` runs without a user build step. Publication and registry-name availability are not confirmed.
 
 Localhost:6395 is the default. An occupied port is an error. LAN sharing is explicitly **unauthenticated**: use only trusted networks, never public hosting. Ctrl-C closes the watcher and connections.
 

@@ -10,7 +10,7 @@ At planning time the repository contained instructions, skills, and the specific
 
 ## Decisions and rationale
 
-- Require Node.js >=26.13.0. Verify availability before implementation validation. Never silently substitute a lower baseline.
+- Require Node.js >=24. Verify availability before implementation validation. Never silently substitute a lower baseline.
 - Use pnpm with `minimumReleaseAge: 2880`. Choose compatible releases at least two days old. Stay on Vue 3.5; do not copy prerelease dependency versions from skill documentation.
 - Use strict TypeScript, Vue SFCs, Vite, and scoped component CSS. Limit global styles to theme tokens, document defaults, and vendor CSS.
 - Use Vue Router for document URLs and browser history. This is within the approved optional dependency and avoids rebuilding its navigation behavior.
@@ -20,7 +20,7 @@ At planning time the repository contained instructions, skills, and the specific
 - Use unified/remark/rehype and Shiki on the server. Render KaTeX with trust disabled. Render Mermaid in the browser with strict security. Never compile Markdown as Vue templates.
 - Verify Everforest Medium palette provenance early. Use custom Shiki themes if built-ins do not match. Keep one authoritative palette source for page, code, and diagram colors.
 - Use Vitest for server and component tests, `@testing-library/vue` for observable Vue behavior, and Playwright for real browser flows. Avoid tests that merely repeat configuration constants.
-- The package name is provisionally `mimimd`; registry availability is a publication prerequisite, not a local development blocker.
+- The package name is `@suppayami/mimimd`, with executable `mimimd`; registry availability is a publication prerequisite, not a local development blocker.
 
 ## Verification conventions
 
@@ -33,7 +33,7 @@ After each implementation batch, run `pnpm format`, `pnpm lint:fix`, and `pnpm l
 ## Task 1: Establish the runtime and dependency gate
 
 **Description:** Verify the requested Node version is available and installed. Create package metadata with Node engines and a pinned compatible pnpm version. Configure the two-day release-age policy before installing dependencies. Record actual versions and blockers. Do not proceed with a falsely passing unsupported-runtime validation.
-**Acceptance criteria:** (1) The runtime satisfies >=26.13.0, or a blocker is explicitly reported. (2) pnpm enforces the release-age policy without exceptions. (3) Package metadata uses ESM and the provisional `mimimd` name.
+**Acceptance criteria:** (1) The runtime satisfies >=24, or a blocker is explicitly reported. (2) pnpm enforces the release-age policy without exceptions. (3) Package metadata uses ESM and the `@suppayami/mimimd` name.
 **Verification:** `node --version`; `pnpm --version`; `pnpm install`; review engine and release-age declarations against the approved spec.
 **Dependencies:** None.
 **Files likely touched:** `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`.
@@ -239,7 +239,7 @@ Walk through specification success criteria 1–11. Separately review desktop/mo
 
 ## Risks and open questions
 
-1. **Runtime availability:** Node >=26.13.0 remains unverified. An unavailable baseline blocks supported-runtime validation.
+1. **Runtime availability:** Node >=24 is verified locally on v24.22.2. Other supported runtime/platform combinations still need release validation.
 2. **Theme identity and license:** Generic Everforest themes may not match Medium. Confirm provenance before styling; request direction if licensing or exact palette availability prevents reuse.
 3. **Renderer security:** Sanitization order, KaTeX output, Mermaid SVG, and CSP must work together. Never solve compatibility by allowing arbitrary scripts or raw HTML.
 4. **File security:** Path encoding, symlinks, and platform differences can undermine containment. Test through HTTP, not only string helpers. Files concurrently replaced during reads need explicit containment review.

@@ -3,11 +3,11 @@
 Specification: `docs/specs/markdown-reader.md`.
 Detailed tasks and verification: `tasks/plan.md`.
 
-The reader is implemented with Hono and its Node adapter, following the approved server change. Automated and separate visual checks pass on Node v26.13.0 / pnpm 12.6.0 on Linux. Unchecked items below remain release verification, not completed work.
+The reader is implemented with Hono and its Node adapter, following the approved server change. Automated checks now pass on Node v24.22.2 / pnpm 12.6.0 on Linux; the earlier separate visual review ran on Node v26.13.0. Unchecked items below remain release verification, not completed work.
 
 ## Phase 1: prerequisites and tooling
 
-- [x] 1. Verify Node.js >=26.13.0 and establish pnpm with `minimumReleaseAge: 2880`.
+- [x] 1. Verify Node.js >=24 and establish pnpm with `minimumReleaseAge: 2880`.
 - [x] 2. Configure approved Oxfmt settings, Antfu ESLint options, and exact format/lint scripts.
 - [x] Checkpoint A: resolve runtime/tooling blockers without lowering the baseline.
 - [x] 3. Compile the server entry and implement the CLI argument contract.
@@ -45,12 +45,12 @@ The reader is implemented with Hono and its Node adapter, following the approved
 - [x] 18. Validate the installed tarball, add usage documentation, and establish CI checks.
 - [ ] Checkpoint G: final release approval after outstanding security/platform checks; criteria 1–11 have automated coverage plus the separate visual review described below.
 - [x] Complete separate desktop/mobile visual and contrast review in both themes.
-- [ ] Finish cross-platform verification and reconfirm registry naming immediately before publication (implementation-time registry lookup returned 404; no name reservation or publication performed).
+- [ ] Finish cross-platform verification and reconfirm registry naming immediately before publication (the earlier unscoped `mimimd` registry lookup returned 404; `@suppayami/mimimd` availability and scope permissions remain unverified; no publication performed).
 - [ ] Obtain explicit permission before publishing. Publication is not an implementation task.
 
 ## Verification record
 
-- Runtime gate: Node v26.13.0, pnpm 12.6.0; frozen installation succeeds with `minimumReleaseAge: 2880` and no exemptions.
+- Runtime gate: Node >=24, verified on v24.22.2 with pnpm 12.6.0; frozen installation, build, type checks, formatting/lint, 16 Vitest tests (including package smoke), and five Playwright flows pass. The initial implementation was verified on v26.13.0. Node 24 type definitions and jsdom 27.4.0 replace dependencies that assumed a newer baseline. `minimumReleaseAge: 2880` remains enforced without exemptions.
 - Builds and source type checks pass. TypeScript 6.0.3 is intentionally used because the current Vue/ESLint tools reject TypeScript 7.
 - `pnpm format`, `pnpm lint:fix`, `pnpm lint`, `pnpm format:check` pass. Resolved ESLint has `curly: [2, 'all']`, no active stylistic rules and Vue indentation disabled. A formatting-rule exclusion config prevents upstream Vue lint rules competing with Oxfmt.
 - Vitest: 16 tests across seven files, including actual HTTP security, symlink replacement, SSE delivery, listener lifecycle, an explicit LAN-interface request, and installed-tarball execution from an unrelated working directory.

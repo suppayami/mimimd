@@ -8,9 +8,9 @@ Use matching Everforest Medium Light and Dark palettes across the page, code blo
 
 ## Tech Stack
 
-- TypeScript, Node.js >=26.13.0, and pnpm. Declare the Node requirement in package engines and use a pnpm lockfile.
+- TypeScript, Node.js >=24, and pnpm. Declare the Node requirement in package engines and use a pnpm lockfile.
 - Set `minimumReleaseAge: 2880` in `pnpm-workspace.yaml`. This is a two-day minimum dependency release age, expressed in minutes.
-- Verify that Node.js 26.13.0 and compatible tooling are available before implementation validation. Do not silently lower the requested minimum.
+- Verify that Node.js 24 and compatible tooling are available before implementation validation. Do not silently lower the requested minimum.
 - Hono with its Node HTTP adapter and a small route layer (approved implementation update). No public hosting or authentication layer.
 - Vue.js 3.5 single-file components with TypeScript and scoped CSS. Use semantic HTML.
 - Use Vue Router for document navigation, direct links, and browser history. This avoids maintaining a custom history implementation.
@@ -29,13 +29,13 @@ Use matching Everforest Medium Light and Dark palettes across the page, code blo
 Proposed public interface:
 
 ```sh
-pnpm dlx mimimd README.md
-pnpm dlx mimimd ./docs
-pnpm dlx mimimd ./docs --no-recursive
-pnpm dlx mimimd ./docs --host 0.0.0.0 --port 6395
-pnpm dlx mimimd ./docs --open
-pnpm dlx mimimd --help
-pnpm dlx mimimd --version
+pnpm dlx @suppayami/mimimd README.md
+pnpm dlx @suppayami/mimimd ./docs
+pnpm dlx @suppayami/mimimd ./docs --no-recursive
+pnpm dlx @suppayami/mimimd ./docs --host 0.0.0.0 --port 6395
+pnpm dlx @suppayami/mimimd ./docs --open
+pnpm dlx @suppayami/mimimd --help
+pnpm dlx @suppayami/mimimd --version
 ```
 
 - Require one file or directory argument. Resolve it against the caller's working directory.
@@ -188,11 +188,11 @@ The published package includes compiled CLI/server code and browser assets. Runt
 8. Traversal, symlink escape, hidden-file access, raw HTML script injection, unsafe URL protocols, and malicious renderer fixtures do not expose files or execute arbitrary scripts.
 9. The server binds locally by default. LAN mode requires an explicit host flag and prints an unauthenticated-access warning.
 10. The published package runs from an unrelated working directory and renders its UI, code, diagrams, and math without CDN access.
-11. On Node.js >=26.13.0, pnpm installation, build, Vue/TypeScript type checks, lint, formatting checks, and tests pass. The UI uses Vue 3.5 with scoped component CSS. The resolved ESLint configuration disables stylistic rules, enables `lessOpinionated`, and enforces braces for all control statements.
+11. On Node.js >=24, pnpm installation, build, Vue/TypeScript type checks, lint, formatting checks, and tests pass. The UI uses Vue 3.5 with scoped component CSS. The resolved ESLint configuration disables stylistic rules, enables `lessOpinionated`, and enforces braces for all control statements.
 
 ## Open Questions
 
-- Package name `mimimd` and the listed CLI defaults are accepted for implementation; registry availability remains unverified.
-- Verify availability of the requested Node.js >=26.13.0 baseline and compatible dependency releases. Treat unavailable tooling as a validation blocker, not permission to substitute a different baseline.
+- Package name `@suppayami/mimimd`, executable name `mimimd`, and the listed CLI defaults are accepted for implementation; registry availability remains unverified.
+- Verify availability of the requested Node.js >=24 baseline and compatible dependency releases. Treat unavailable tooling as a validation blocker, not permission to substitute a different baseline.
 - Verify exact Everforest Medium palette source, license, and availability as Shiki themes before implementation. Custom themes are allowed to meet the confirmed visual requirement.
 - Confirm npm package-name availability before publication; local command naming does not depend on registry availability.

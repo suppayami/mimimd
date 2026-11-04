@@ -20,7 +20,7 @@ it('installs a tarball and serves from an unrelated working directory', async ()
 		['--dir', installation, '--ignore-workspace', 'add', path.join(root, 'mimimd.tgz')],
 		{ maxBuffer: 10_000_000 },
 	)
-	const installed = path.join(installation, 'node_modules/mimimd')
+	const installed = path.join(installation, 'node_modules/@suppayami/mimimd')
 	const entry = path.join(installed, 'dist/cli.js')
 	expect(
 		(

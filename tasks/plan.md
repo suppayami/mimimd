@@ -1,6 +1,6 @@
 # Plan: Agent publishing sessions
 
-Status: Ready for review. Planning only; application implementation has not started.
+Status: Implemented. See [todo.md](todo.md) for verification evidence, measured performance, and remaining platform/release caveats.
 
 Input: [Accepted specification](../docs/specs/agent-publishing.md).
 

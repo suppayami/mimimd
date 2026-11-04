@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process'
 import { mkdir, mkdtemp, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import process from 'node:process'
 import { expect, test } from '@playwright/test'
 test('refreshes edits and renames while retaining the active route and theme', async ({ page }) => {
 	const root = await mkdtemp(path.resolve('tests/.live-'))
@@ -13,6 +14,7 @@ test('refreshes edits and renames while retaining the active route and theme', a
 	)
 	await writeFile(source, '# Before\n\n![Live image](icon.svg)')
 	const child = spawn('node', ['dist/cli.js', root, '--port', '3198'], {
+		env: { ...process.env, MIMIMD_STATE_DIR: path.join(root, 'state') },
 		stdio: ['ignore', 'pipe', 'pipe'],
 	})
 	try {

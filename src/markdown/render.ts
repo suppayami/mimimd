@@ -17,10 +17,7 @@ import { visit } from 'unist-util-visit'
 import { isMap, isScalar, isSeq, parseDocument, stringify } from 'yaml'
 import { themes } from '../themes/everforest.js'
 
-const highlighter = createHighlighter({
-	themes,
-	langs: [],
-})
+let highlighter: ReturnType<typeof createHighlighter> | undefined
 
 const encodePath = (p: string) => p.split('/').map(encodeURIComponent).join('/')
 
@@ -62,10 +59,13 @@ function readFrontmatter(source: string): Frontmatter {
 	}
 }
 
-export async function renderMarkdown(source: string, document: string): Promise<RenderedDocument> {
+export async function renderMarkdown(
+	source: string,
+	document: string | null,
+): Promise<RenderedDocument> {
 	const headings: RenderedDocument['headings'] = []
 	let frontmatter: Frontmatter | undefined
-	const highlight = await highlighter
+	const highlight = await (highlighter ??= createHighlighter({ themes, langs: [] }))
 
 	const result = await unified()
 		.use(remarkParse)
@@ -124,6 +124,14 @@ export async function renderMarkdown(source: string, document: string): Promise<
 				for (const attribute of ['href', 'src'] as const) {
 					const value = node.properties[attribute]
 					if (typeof value !== 'string' || /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(value)) {
+						continue
+					}
+
+					if (document === null) {
+						// Session content has no implicit filesystem base.
+						if (!/^\/(?:doc|session|content)\//.test(value)) {
+							delete node.properties[attribute]
+						}
 						continue
 					}
 

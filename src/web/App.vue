@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { DocumentIndex, RenderedDocument } from '../contracts'
+import type { DocumentIndex, DocumentMap, RenderedDocument, SessionStatus } from '../contracts'
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FileTree from './FileTree.vue'
 import MarkdownView from './MarkdownView.vue'
+import SessionDocuments from './SessionDocuments.vue'
 import { theme, toggleTheme } from './theme'
 
 const route = useRoute()
@@ -18,11 +19,50 @@ const headingsOpen = ref(false)
 const fileButton = ref<HTMLButtonElement>()
 const headingButton = ref<HTMLButtonElement>()
 const revision = ref(0)
+const documentMap = shallowRef<DocumentMap>()
+const attempts = shallowRef<SessionStatus[]>([])
+const sessionKey = computed(() => (route.path.startsWith('/session/') ? route.path.slice(9) : ''))
+const selectedAttempt = computed(() =>
+	attempts.value.find((attempt) => attempt.key === sessionKey.value),
+)
+const showNavigation = computed(
+	() =>
+		index.value?.mode !== 'file' ||
+		!!documentMap.value?.documents.some((entry) => entry.source === 'session') ||
+		!!attempts.value.length,
+)
+let committedRevision = 0
+let mapGeneration = 0
+
+async function refreshMap() {
+	const token = ++mapGeneration
+	const response = await fetch('/api/documents')
+	if (!response.ok) {
+		throw new Error('Unable to load document map.')
+	}
+	const result = (await response.json()) as DocumentMap
+	if (token === mapGeneration) {
+		documentMap.value = result
+	}
+}
+
+function updateAttempts(next: SessionStatus[]) {
+	attempts.value = next
+	void refreshMap().catch((failure: Error) => {
+		error.value = failure.message
+	})
+	const selected = next.find((attempt) => attempt.key === sessionKey.value)
+	if (selected?.revision && selected.revision > committedRevision) {
+		void refresh()
+	}
+}
 
 const active = computed(() =>
 	route.path.startsWith('/doc/')
 		? route.path.slice(5).split('/').map(decodeURIComponent).join('/')
-		: '',
+		: sessionKey.value
+			? `/session/${sessionKey.value}`
+			: '',
 )
 
 let generation = 0
@@ -54,22 +94,31 @@ async function refresh() {
 			return
 		}
 
-		if (!nextIndex.documents.length && !active.value) {
+		if (!active.value) {
 			document.value = undefined
-			error.value = 'No Markdown documents found.'
+			error.value =
+				nextIndex.mode === 'empty'
+					? 'Welcome to mimimd. Select a published document to start reading.'
+					: 'No Markdown documents found.'
 			return
 		}
 
-		const content = await fetch(`/api/document?path=${encodeURIComponent(active.value)}`)
+		const content = await fetch(
+			sessionKey.value
+				? `/api/session-documents/${sessionKey.value}`
+				: `/api/document?path=${encodeURIComponent(active.value)}`,
+		)
 		if (!content.ok) {
 			throw new Error('Document unavailable. Select another document from the file list.')
 		}
 
-		const result = (await content.json()) as RenderedDocument
+		const result = (await content.json()) as RenderedDocument & { revision?: number }
 		if (token !== generation) {
 			return
 		}
 
+		committedRevision = result.revision ?? 0
+		revision.value++
 		document.value = { ...result, path: active.value }
 		error.value = ''
 	} catch (failure) {
@@ -77,7 +126,9 @@ async function refresh() {
 			return
 		}
 
-		document.value = undefined
+		if (document.value?.path !== active.value) {
+			document.value = undefined
+		}
 		error.value = (failure as Error).message
 	}
 }
@@ -156,7 +207,9 @@ function navigate(event: MouseEvent) {
 	const url = new URL(link.href)
 	if (
 		url.origin === location.origin &&
-		(url.pathname.startsWith('/doc/') || url.pathname === route.path)
+		(url.pathname.startsWith('/doc/') ||
+			url.pathname.startsWith('/session/') ||
+			url.pathname === route.path)
 	) {
 		event.preventDefault()
 		void router.push(url.pathname + url.search + url.hash)
@@ -166,6 +219,7 @@ function navigate(event: MouseEvent) {
 watch(
 	() => route.path,
 	() => {
+		committedRevision = 0
 		void refresh()
 	},
 )
@@ -181,13 +235,28 @@ onMounted(() => {
 	// The server sends "ready" on every connection, including reconnects.
 	events = new EventSource('/events')
 	events.onmessage = () => {
-		revision.value++
+		void refreshMap().catch((failure: Error) => {
+			error.value = failure.message
+		})
 		void refresh()
 	}
+	events.addEventListener('session-snapshot', (event) => {
+		updateAttempts((JSON.parse(event.data) as { attempts: SessionStatus[] }).attempts)
+	})
+	events.addEventListener('session-status', (event) => {
+		const status = JSON.parse(event.data) as SessionStatus
+		const next = [...attempts.value.filter((attempt) => attempt.key !== status.key), status]
+		if (status.state === 'ready') {
+			updateAttempts(next)
+		} else {
+			attempts.value = next
+		}
+	})
 })
 
 onUnmounted(() => {
 	generation++
+	mapGeneration++
 	events?.close()
 })
 </script>
@@ -200,7 +269,7 @@ onUnmounted(() => {
 		</RouterLink>
 		<div class="controls">
 			<button
-				v-if="index?.mode === 'folder'"
+				v-if="showNavigation"
 				ref="fileButton"
 				class="mobile"
 				:aria-expanded="filesOpen"
@@ -236,16 +305,16 @@ onUnmounted(() => {
 			</button>
 		</div>
 	</header>
-	<div class="layout" :class="{ single: index?.mode === 'file' }">
+	<div class="layout" :class="{ single: !showNavigation }">
 		<nav
-			v-if="index?.mode === 'folder'"
+			v-if="showNavigation"
 			id="mimimd:files"
 			aria-label="Files"
 			:class="{ expanded: filesOpen }"
 			@keydown.esc="closeFiles"
 		>
 			<h2>
-				Documents <span class="count">{{ index.documents.length }}</span>
+				Documents <span class="count">{{ index?.documents.length ?? 0 }}</span>
 			</h2>
 			<label for="mimimd:filter">Filter files</label>
 			<div class="search">
@@ -261,9 +330,17 @@ onUnmounted(() => {
 				/>
 			</div>
 			<FileTree
-				:entries="index.tree"
+				:entries="index?.tree ?? []"
 				:active="active"
 				:filter="filter"
+				@select="closeFiles"
+			/>
+			<SessionDocuments
+				:documents="
+					documentMap?.documents.filter((entry) => entry.source === 'session') ?? []
+				"
+				:attempts="attempts"
+				:active="active"
 				@select="closeFiles"
 			/>
 			<p class="rail-note">
@@ -278,11 +355,20 @@ onUnmounted(() => {
 				</svg>
 				<span>{{ active || 'Your documents' }}</span>
 			</p>
+			<p v-if="selectedAttempt?.state === 'receiving'" role="status">
+				{{ sessionKey }}: Receiving Markdown ({{ selectedAttempt.receivedBytes }} bytes)…
+			</p>
+			<p v-else-if="selectedAttempt?.state === 'preparing'" role="status">
+				{{ sessionKey }}: Preparing on server…
+			</p>
+			<p v-else-if="selectedAttempt?.state === 'failed'" role="status">
+				{{ sessionKey }}: {{ selectedAttempt.error?.message }} Ask the publisher to retry.
+			</p>
 			<p v-if="error" role="status">
 				{{ error }}
 			</p>
 			<MarkdownView
-				v-else-if="document"
+				v-if="document"
 				:html="document.html"
 				:frontmatter="document.frontmatter"
 				:path="document.path"
@@ -290,7 +376,7 @@ onUnmounted(() => {
 				:revision="revision"
 				@rendered="onDocumentRendered"
 			/>
-			<p v-else role="status">Loading document…</p>
+			<p v-else-if="!error" role="status">Loading document…</p>
 		</main>
 		<nav
 			id="mimimd:headings"

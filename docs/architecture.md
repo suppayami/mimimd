@@ -2,9 +2,9 @@
 
 ## Overview
 
-`@suppayami/mimimd` provides the `mimimd` command: a read-only Markdown reader running as a local Node.js process and a Vue application in the browser. It requires Node >=24 and defaults to `http://localhost:6395`.
+`@suppayami/mimimd` provides the `mimimd` command: a Markdown reader with read-only filesystem scopes and memory-only agent publishing, running as a local Node.js process and a Vue application in the browser. It requires Node >=24 and defaults to `http://localhost:6395`.
 
-The filesystem is the source of truth. There is no database, editing API, authentication layer, or external rendering service. The server indexes eligible files and renders requested documents; the browser owns navigation, theme selection, and diagrams.
+Filesystem scopes remain read-only. Separately, a bounded in-memory session store admits raw Markdown uploads and commits rendered revisions atomically. There is no database, authentication layer, source history, delete/patch API, or external rendering service. The browser owns navigation, theme selection, and diagrams; publications never take over selection.
 
 ```text
 CLI arguments
@@ -39,12 +39,12 @@ Filesystem changes --> Chokidar --> SSE --> Browser refresh
 
 ## Startup and filesystem scope
 
-1. The CLI handles help/version without requiring a document. Otherwise, it resolves the input relative to the caller's working directory.
+1. The CLI handles help/version, `discover --json`, and `skill` without requiring a document. Serving with no input creates an empty session without filesystem watchers or local assets. Otherwise it resolves input relative to the caller's working directory.
 2. `FileScope.create()` validates the input, rejects symbolic-link input paths and private paths, and establishes the document/asset root.
 3. Discovery builds a deterministic tree of `.md` and `.markdown` files, case-insensitively. Hidden entries, `node_modules`, private entries, symbolic links, and `.gitignore` matches are excluded. Empty directories are omitted from the tree.
 4. The server binds to the requested host and port, then starts the watcher. An occupied port is an error, not a reason to choose another port silently.
 5. The CLI prints the root and URL. Browser opening is opt-in; non-loopback binding prints an unauthenticated-access warning.
-6. SIGINT/SIGTERM closes the watcher, event streams, and HTTP connections.
+6. After readiness, the CLI registers its non-credential discovery metadata when a loopback probe is available. SIGINT/SIGTERM closes the optional watcher, uploads, worker, event streams, and HTTP connections, then removes only its own registry record.
 
 Folder mode scans recursively unless `--no-recursive` is set. Root `README.md`, then `index.md`, is preferred case-insensitively; otherwise, the first document in tree order is selected.
 
@@ -66,6 +66,22 @@ File mode exposes only the selected Markdown document and hides file navigation.
 Document identity uses root-relative paths rather than generated numeric IDs. URL path segments are encoded individually, with fragments kept separate. Relative Markdown links become reader routes; local image and attachment links become content routes. A reader URL alone does not grant access: the document API still checks eligibility.
 
 Bundled UI assets resolve relative to the installed server module, not the caller's directory. User-content routes never act as an arbitrary static file server.
+
+## Session publishing and discovery
+
+`src/server/session.ts` owns admission, latest attempt status and committed serialized revisions. Each startup generates a fresh opaque session ID. Health is cheap and does not scan files or render Markdown. Session keys and filesystem paths have separate identities and routes. `GET /api/documents` merges only eligible filesystem entries with committed session entries, each with an absolute reader URL and writable flag. `GET /session/:key` serves the reader shell.
+
+`PUT /api/session-documents/:key` requires matching `X-Mimimd-Session`, uncompressed `text/markdown; charset=utf-8`, explicit loopback binding, an actual loopback listener, and a local peer. Existing Host/Origin/CSP rules remain enforced. Admission reserves source and complete output capacity while retaining any previous revision. Input is streamed with actual-byte counting, fatal UTF-8 decoding, a deadline, and bounded active attempts. No unbounded body parser is used.
+
+After upload validation, 202 returns an attempt ID, session ID, key, reader URL, and status URL. A module-relative worker runs the unchanged rich Markdown pipeline with heap and elapsed-time limits. It validates the complete serialized result before transferring it. Only successful rendering commits content, revision, and map visibility. A failed upload, timeout, worker exit, or excessive output retains prior content. Shutdown cancels pending work and terminates the worker.
+
+`GET /api/session-documents/:key/status` returns receiving/preparing/ready/failed, received bytes, attempt identity, committed revision, and safe error metadata. `GET /api/session-documents/:key` returns the retained serialized rendered revision without rebuilding large JSON on each request. Two attempts, one renderer, 256 keys, 10 MiB source, 32 MiB output, 128 MiB accounted payload/reservations, 120-second upload and 60-second render deadlines, and 256 MiB worker old-generation heap are fixed initial policy, not a process-wide RSS guarantee.
+
+SSE preserves unnamed filesystem messages and adds `session-snapshot` (`{ sessionId, attempts }`) on every connection before incremental `session-status` events. Progress is coalesced, and a slow client is disconnected rather than accumulating an unbounded queue. Events contain small status metadata only. The browser updates status without fetching full articles on progress; it fetches new committed revisions and reuses staged DOM/diagram preparation. Server ready is not browser completion. Session content has no implicit filesystem base: use absolute map URLs for links and explicit eligible `/content/` URLs for assets.
+
+`src/server/discovery.ts` registers one metadata record per session using exclusive creation and restrictive modes. Linux uses `$XDG_STATE_HOME/mimimd` or `~/.local/state/mimimd`; macOS uses `~/Library/Application Support/mimimd`; Windows uses `%LOCALAPPDATA%/mimimd` (fallback `~/AppData/Local/mimimd`). `MIMIMD_STATE_DIR` isolates tests. Discovery validates record shape and exact product/protocol/session health identity using loopback-only, non-redirecting probes with one-second deadlines and bounded response bodies. Stale records are not deleted. Wildcard bindings advertise a usable loopback reader and remain read-only; explicit LAN-only bindings without a loopback probe emit a diagnostic and are not registered. Only Linux permissions have been verified.
+
+`src/agent-skill.ts` is the single bundled source of reusable `mimimd skill` Markdown. Printing it has no server, registry, installation or network side effect. The installed worker and skill resolve independently of the caller's working directory.
 
 ## Server-side Markdown pipeline
 
@@ -135,4 +151,4 @@ The root `tsconfig.json` references the server and web configurations. The serve
 
 Vitest covers CLI, filesystem, renderer, HTTP, component behavior, and installed-tarball execution. Playwright covers real navigation, security, rich content, live updates, and asynchronous document commits. Use the repository's installed Playwright through `pnpm exec playwright` or `pnpm test:e2e`, not an on-demand package runner.
 
-Functional tests avoid screenshots and arbitrary CSS/pixel assertions. Separate visual review covers both themes, desktop/mobile layouts, and overflow/fallback fixtures. `node scripts/check-contrast.ts` checks palette text contrast independently. Generated synthetic workspaces and visual artifacts remain in ignored `tests/.*` paths; package smoke installation needs registry access for dependencies, but rendering itself does not.
+Functional tests avoid screenshots and arbitrary CSS/pixel assertions. Separate visual review covers both themes, desktop/mobile layouts, and overflow/fallback fixtures. `node scripts/check-contrast.ts` checks palette text contrast independently. New publishing/discovery/package verification cleans generated synthetic workspaces. Older test suites may leave ignored `tests/.*` artifacts requiring inspected cleanup. Package smoke installation needs registry access for dependencies, but rendering itself does not.

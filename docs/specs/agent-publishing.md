@@ -193,7 +193,7 @@ The session identity header and required Markdown media type also prevent ordina
 
 ### Discovery lifecycle
 
-Store one non-credential metadata record per session in a per-user application state directory, not in the served workspace. Use restrictive permissions where supported. The record contains session ID, PID, start time, local probe URL, reader URL, scope label, and protocol version. It contains no document contents.
+Store one non-credential metadata record per session in a per-user application state directory, not in the served workspace. Approved policy: Linux uses `$XDG_STATE_HOME/mimimd` (fallback `~/.local/state/mimimd`), macOS uses `~/Library/Application Support/mimimd`, and Windows uses `%LOCALAPPDATA%/mimimd` (fallback `~/AppData/Local/mimimd`). `MIMIMD_STATE_DIR` explicitly overrides the directory for isolation. New directories use mode 0700 and records use mode 0600 where supported. Explicit LAN-only/other hostname bindings without a loopback probe are not registered and emit a diagnostic; wildcard bindings register their loopback probe and remain read-only. Use restrictive permissions where supported. The record contains session ID, PID, start time, local probe URL, reader URL, scope label, and protocol version. It contains no document contents.
 
 Publish the record only after the server is ready. Remove only that session's record on graceful shutdown. A crash may leave stale metadata.
 
@@ -241,7 +241,7 @@ Large-content verification must include a streamed 10 MiB prose document, an exa
 ## Open Questions
 
 - The initial resource limits and two-second health/status verification target are accepted planning baselines, not measured capabilities. Changes require review.
-- Confirm the exact per-user state-directory convention and permission behavior for Linux, macOS, and Windows during implementation planning. The current repository is primarily verified on Linux.
+- The state-directory convention and explicit LAN-only binding policy were approved during implementation. Permission behavior is verified on Linux only; macOS and Windows remain unverified.
 - Browser performance depends on content shape. The implementation must measure the representative fixture before claiming a supported rich-content envelope. Any need for virtualization or a different rendering mode requires scope approval.
 
 All product choices above follow the accepted interview scope. The user accepted this specification by requesting continuation to the detailed implementation plan.

@@ -44,7 +44,8 @@ test('empty reader preserves selection, shows upload status, replaces atomically
 			'Receiving Markdown',
 		)
 		expect(new URL(page.url()).pathname).toBe('/')
-		upload.end('First body')
+		// Session-relative images are rejected, but must not prevent the article from displaying.
+		upload.end('First body\n\n![Unavailable relative image](image.png)')
 		await expect(page.getByRole('region', { name: 'Session documents' })).not.toContainText(
 			'Receiving Markdown',
 		)
@@ -68,7 +69,7 @@ test('empty reader preserves selection, shows upload status, replaces atomically
 		await expect(
 			page.getByRole('heading', { name: 'First version', exact: true }),
 		).toBeVisible()
-		upload.end('Replacement body')
+		upload.end('Replacement body\n\n![Unavailable relative image](image.png)')
 		await expect(page.getByRole('heading', { name: 'Replacement', exact: true })).toBeVisible()
 		const bad = await fetch(`${app.url}/api/session-documents/first`, {
 			method: 'PUT',

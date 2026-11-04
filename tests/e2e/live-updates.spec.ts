@@ -44,6 +44,7 @@ test('refreshes edits and renames while retaining the active route and theme', a
 		expect(await (await refreshedImage).text()).toContain('Updated image')
 		await rename(source, path.join(root, 'renamed.md'))
 		await expect(page.getByRole('status')).toContainText('Document unavailable')
+		await expect(page.getByRole('article')).toHaveCount(0)
 		await expect(page.getByRole('link', { name: 'renamed.md', exact: true })).toBeVisible()
 		await page.getByRole('link', { name: 'renamed.md', exact: true }).click()
 		await expect(page.getByRole('heading', { name: 'After', exact: true })).toBeVisible()

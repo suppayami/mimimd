@@ -126,7 +126,7 @@ async function refresh() {
 			return
 		}
 
-		if (document.value?.path !== active.value) {
+		if (!sessionKey.value || document.value?.path !== active.value) {
 			document.value = undefined
 		}
 		error.value = (failure as Error).message

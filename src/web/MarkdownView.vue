@@ -48,7 +48,7 @@ watch(
 
 		const prepared = document.createElement('div')
 		prepared.innerHTML = html
-		for (const image of prepared.querySelectorAll('img')) {
+		for (const image of prepared.querySelectorAll<HTMLImageElement>('img[src]')) {
 			const url = new URL(image.src)
 			if (url.origin === location.origin) {
 				url.searchParams.set('revision', String(revision))

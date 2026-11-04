@@ -1,6 +1,10 @@
 import { parseArgs } from 'node:util'
 
 export function parseArguments(args: string[]) {
+	const command = args[0] === 'discover' || args[0] === 'skill' ? args[0] : 'serve'
+	if (command !== 'serve') {
+		args = args.slice(1)
+	}
 	const { values, positionals } = parseArgs({
 		args,
 		allowPositionals: true,
@@ -11,15 +15,29 @@ export function parseArguments(args: string[]) {
 			open: { type: 'boolean' },
 			help: { type: 'boolean', short: 'h' },
 			version: { type: 'boolean', short: 'v' },
+			json: { type: 'boolean' },
 		},
 	})
 
 	if (values.help || values.version) {
-		return { ...values, input: '', port: 6395, recursive: true }
+		return { ...values, command, input: '', port: 6395, recursive: true }
 	}
 
-	if (positionals.length !== 1) {
-		throw new Error('Provide exactly one Markdown file or directory. Use --help for usage.')
+	if (
+		command !== 'serve' &&
+		(positionals.length ||
+			args.some((arg) => arg !== '--json') ||
+			(command === 'discover' && !values.json) ||
+			(command === 'skill' && values.json))
+	) {
+		throw new Error('Use mimimd discover --json or mimimd skill without server options.')
+	}
+	if (command === 'serve' && values.json) {
+		throw new Error('--json is only supported by discover.')
+	}
+
+	if (positionals.length > 1) {
+		throw new Error('Provide at most one Markdown file or directory. Use --help for usage.')
 	}
 
 	if (!values.host?.trim() || values.host !== values.host.trim()) {
@@ -31,5 +49,11 @@ export function parseArguments(args: string[]) {
 		throw new Error('--port must be an integer from 1 to 65535.')
 	}
 
-	return { ...values, input: positionals[0]!, port, recursive: !values['no-recursive'] }
+	return {
+		...values,
+		command,
+		input: positionals[0] ?? '',
+		port,
+		recursive: !values['no-recursive'],
+	}
 }

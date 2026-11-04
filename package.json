@@ -9,6 +9,7 @@
 	},
 	"files": [
 		"dist",
+		"docs/agent-publishing.md",
 		"docs/architecture.md",
 		"docs/theme-attribution.md"
 	],

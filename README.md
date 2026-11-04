@@ -17,13 +17,11 @@ node dist/cli.js ./docs --host 0.0.0.0 --port 6395
 node dist/cli.js ./docs --open
 ```
 
-Once published, `pnpm dlx @suppayami/mimimd <file-or-folder>` runs without a user build step. Publication and registry-name availability are not confirmed.
-
 Localhost:6395 is the default. An occupied port is an error. LAN sharing is explicitly **unauthenticated**: use only trusted networks, never public hosting. Ctrl-C closes the watcher and connections.
 
 ## Reading
 
-Folder mode offers expandable directories, filename/path filtering, heading links, direct URLs and browser history. File mode hides the file sidebar and does not expose sibling Markdown. Theme selection follows the OS initially and persists when changed. Narrow screens provide Files and Headings controls.
+Folder mode offers expandable directories, filename/path filtering, heading links, direct URLs and browser history. File mode does not expose sibling Markdown and shows navigation when session documents or publishing attempts are present. Theme selection follows the OS initially and persists when changed. Narrow screens provide Files and Headings controls.
 
 CommonMark/GFM, task lists, Shiki code, KaTeX math and strict Mermaid diagrams render locally without CDN requests. Unknown code languages remain plain text. Raw HTML, MDX, diagram directives and click actions are disabled. Content, tree and image changes update automatically.
 
@@ -49,7 +47,7 @@ Limits: 10 MiB actual UTF-8 source bytes, two active attempts, one render worker
 
 Discovery stores metadata only: Linux `$XDG_STATE_HOME/mimimd` or `~/.local/state/mimimd`, macOS `~/Library/Application Support/mimimd`, Windows `%LOCALAPPDATA%/mimimd`. `MIMIMD_STATE_DIR` overrides this for isolated environments. New directories/records use restrictive permissions where supported. Records are registered after readiness, verified over bounded loopback-only health probes without redirects, and removed at graceful shutdown. Stale records are skipped, not swept. Explicit LAN-only bindings without a loopback probe are not registered and print a diagnostic.
 
-See [the publishing specification](docs/specs/agent-publishing.md) for contracts and [implementation evidence](tasks/todo.md) for measured limits and remaining platform caveats.
+See [agent publishing](docs/agent-publishing.md) for the HTTP workflow, response fields, retry behavior, limits, and discovery storage.
 
 ## Development
 
@@ -68,6 +66,6 @@ pnpm test:e2e
 pnpm pack
 ```
 
-Tests use synthetic workspace fixtures and isolated discovery directories; no production data or external model services are used. Publishing/discovery/package tests clean their generated workspaces. Older tests may leave ignored `tests/.*` directories, which must be inspected and cleaned after verification. Package smoke validation installs a local tarball and requires registry access for dependencies, then exercises the installed CLI and locally bundled UI.
+Tests use synthetic workspace fixtures and isolated discovery directories; no production data or external model services are used. Inspect and clean generated test directories and reports after verification, including ignored `tests/.*` artifacts. Preserve fixtures and user files. Package smoke validation installs a local tarball and requires registry access for dependencies, then exercises the installed CLI and locally bundled UI.
 
-See [architecture and application flow](docs/architecture.md) and [theme attribution](docs/theme-attribution.md). Separate desktop/mobile screenshot review and text-contrast verification were performed outside the functional suites. Run `node scripts/check-contrast.ts` to recheck palette text contrast; use `tests/fixtures/layout.md` for overflow and fallback review. Physical LAN-device verification remains a release check. Linux is the currently tested platform; concurrent adversarial filesystem mutation and Windows/macOS require further validation. Do not serve a directory writable by an untrusted process.
+See [architecture and application flow](docs/architecture.md) and [theme attribution](docs/theme-attribution.md). Keep visual review separate from functional tests. Run `node scripts/check-contrast.ts` to check palette text contrast; use `tests/fixtures/layout.md` for overflow and fallback review. Verify permissions and LAN access on the target platform and device. Do not serve a directory writable by an untrusted process.

@@ -10,6 +10,7 @@
 
 ## Workflow
 
+- Always clean up generated test and verification artifacts after each run, including failed runs (temporary directories, reports, screenshots, and logs). Preserve test sources, fixtures, and user files; follow the deletion approval and safety rules above.
 - Keep this file focused on stable architecture and project conventions; do not update it for individual fields, routes, or other implementation details.
 - After finishing all changes, run `pnpm format` and `pnpm lint:fix` without asking for permission, then run `pnpm lint` to check for remaining lint errors.
 

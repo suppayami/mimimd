@@ -177,11 +177,15 @@ it('ignores excluded tree changes and resumes watching after rules change', asyn
 		try {
 			while (true) {
 				const { value, done } = await reader.read()
-				if (done) {return}
+				if (done) {
+					return
+				}
 				messages.push(new TextDecoder().decode(value))
 			}
 		} catch (error) {
-			if (!controller.signal.aborted) {throw error}
+			if (!controller.signal.aborted) {
+				throw error
+			}
 		}
 	})()
 

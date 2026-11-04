@@ -161,6 +161,7 @@ article :deep(hr) {
 	margin-block: 2rem;
 }
 article :deep(pre) {
+	tab-size: 4;
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
 	overflow-x: auto;

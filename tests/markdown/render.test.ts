@@ -16,6 +16,18 @@ it('renders GFM, unique headings, math, highlighted code and encoded relative li
 		'const x = 1',
 	)
 })
+
+it.each(['python', 'unknownlang', ''])(
+	'preserves code-block whitespace with language %j',
+	async (language) => {
+		const code = '\ndef greet():\n    message = "hello  world"\n\n\tprint(message)  \n'
+		const result = await renderMarkdown(`\`\`\`${language}\n${code}\`\`\``, 'code.md')
+		const document = new JSDOM(result.html).window.document
+
+		expect(document.querySelector('pre code')?.textContent).toBe(code)
+	},
+)
+
 it('extracts YAML properties without rendering metadata as headings or expanding aliases', async () => {
 	const result = await renderMarkdown(
 		'---\ntitle: Reading notes\ntags: [Markdown, Everforest]\ndraft: false\ncount: 0\nempty: null\nauthor: &author\n  name: Mimi\ncredit: *author\n---\n\n# Notes\n\nBody text.\n\n---\n\nMore text.',

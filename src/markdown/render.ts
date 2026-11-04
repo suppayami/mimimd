@@ -176,7 +176,7 @@ export async function renderMarkdown(source: string, document: string): Promise<
 				}
 
 				const lang = Object.hasOwn(bundledLanguages, language) ? language : 'text'
-				const highlighted = highlight.codeToHast(toText(code), {
+				const highlighted = highlight.codeToHast(toText(code, { whitespace: 'pre' }), {
 					lang,
 					themes: { light: 'everforest-medium-light', dark: 'everforest-medium-dark' },
 				})

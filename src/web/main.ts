@@ -21,4 +21,4 @@ const router = createRouter({
 	routes: [{ path: '/:pathMatch(.*)*', component: { render: () => null } }],
 })
 
-createApp(App).use(router).mount('#app')
+createApp(App).use(router).mount('[id="mimimd:app"]')

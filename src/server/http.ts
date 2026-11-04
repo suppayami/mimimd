@@ -187,16 +187,32 @@ export async function startServer(scope: FileScope, host = 'localhost', port = 6
 		})
 	})
 
-	const watcher = watch(scope.root, {
+	const ignoreFiles = new Set<string>()
+	for (let directory = scope.root; ; directory = path.dirname(directory)) {
+		ignoreFiles.add(path.join(directory, '.gitignore'))
+		if (directory === scope.ignoreRoot) {
+			break
+		}
+	}
+
+	const watcher = watch([scope.root, ...ignoreFiles], {
 		ignoreInitial: true,
 		followSymlinks: false,
 		ignored: (file, stat) => {
+			if (ignoreFiles.has(file)) {
+				return false
+			}
+
 			const relative = path.relative(scope.root, file)
 			if (!relative) {
 				return false
 			}
 
 			const parts = relative.split(path.sep)
+			if (parts.at(-1) === '.gitignore' && !parts.slice(0, -1).some(isExcluded)) {
+				return false
+			}
+
 			if (parts.some(isExcluded)) {
 				return true
 			}

@@ -86,6 +86,57 @@ it('rejects a directory swapped for an out-of-root symlink after startup', async
 	expect(response.status).toBe(404)
 	expect(await response.text()).not.toContain('OUTSIDE_MARKER')
 })
+it.each(['recursive', 'shallow', 'file'] as const)(
+	'notifies clients when ancestor and nested ignore rules change in %s mode',
+	async (mode) => {
+		const repository = await mkdtemp(path.resolve('tests/.ignore-events-'))
+		const docs = path.join(repository, 'docs')
+		await mkdir(path.join(repository, '.git'))
+		await mkdir(path.join(docs, 'nested'), { recursive: true })
+		await writeFile(path.join(docs, 'README.md'), '# Home')
+		await writeFile(path.join(docs, 'nested', 'image.svg'), '<svg/>')
+		const scope = await FileScope.create(
+			mode === 'file' ? path.join(docs, 'README.md') : docs,
+			mode !== 'shallow',
+		)
+		const server = await startServer(scope, '127.0.0.1', 0)
+		const controller = new AbortController()
+		try {
+			const response = await fetch(`${server.url}/events`, {
+				signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]),
+			})
+			const reader = response.body!.getReader()
+			await reader.read()
+
+			for (const directory of [repository, docs, path.join(docs, 'nested')]) {
+				const rules = path.join(directory, '.gitignore')
+				const asset =
+					directory === repository
+						? 'docs/nested/image.svg'
+						: directory === docs
+							? 'nested/image.svg'
+							: 'image.svg'
+				for (const source of [`${asset}\n`, `!${asset}\n`]) {
+					await writeFile(rules, source)
+					expect(new TextDecoder().decode((await reader.read()).value)).toContain(
+						'change',
+					)
+					expect((await fetch(`${server.url}/content/nested/image.svg`)).status).toBe(
+						source.startsWith('!') ? 200 : 404,
+					)
+				}
+
+				await rename(rules, path.join(directory, 'inactive-rules.txt'))
+				expect(new TextDecoder().decode((await reader.read()).value)).toContain('change')
+			}
+		} finally {
+			controller.abort()
+			await server.close()
+		}
+	},
+	10000,
+)
+
 it('delivers filesystem changes over SSE', async () => {
 	const controller = new AbortController()
 	const response = await fetch(`${app.url}/events`, { signal: controller.signal })

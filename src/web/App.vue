@@ -116,7 +116,7 @@ async function toggleFiles() {
 	}
 
 	await nextTick()
-	window.document.getElementById('filter')?.focus()
+	window.document.getElementById('mimimd:filter')?.focus()
 }
 
 async function toggleHeadings() {
@@ -126,7 +126,7 @@ async function toggleHeadings() {
 	}
 
 	await nextTick()
-	const navigation = window.document.getElementById('headings')
+	const navigation = window.document.getElementById('mimimd:headings')
 	navigation?.querySelector<HTMLElement>('a, button')?.focus()
 }
 
@@ -195,7 +195,7 @@ onUnmounted(() => {
 })
 </script>
 <template>
-	<a class="skip" href="#reading">Skip to content</a>
+	<a class="skip" href="#mimimd:reading">Skip to content</a>
 	<header>
 		<RouterLink class="brand" to="/">
 			<span class="brand-name">mimimd</span>
@@ -207,7 +207,7 @@ onUnmounted(() => {
 				ref="fileButton"
 				class="mobile"
 				:aria-expanded="filesOpen"
-				aria-controls="files"
+				aria-controls="mimimd:files"
 				@click="toggleFiles"
 			>
 				Files
@@ -216,7 +216,7 @@ onUnmounted(() => {
 				ref="headingButton"
 				class="mobile"
 				:aria-expanded="headingsOpen"
-				aria-controls="headings"
+				aria-controls="mimimd:headings"
 				@click="toggleHeadings"
 			>
 				Headings
@@ -242,7 +242,7 @@ onUnmounted(() => {
 	<div class="layout" :class="{ single: index?.mode === 'file' }">
 		<nav
 			v-if="index?.mode === 'folder'"
-			id="files"
+			id="mimimd:files"
 			aria-label="Files"
 			:class="{ expanded: filesOpen }"
 			@keydown.esc="closeFiles"
@@ -250,13 +250,18 @@ onUnmounted(() => {
 			<h2>
 				Documents <span class="count">{{ index.documents.length }}</span>
 			</h2>
-			<label for="filter">Filter files</label>
+			<label for="mimimd:filter">Filter files</label>
 			<div class="search">
 				<svg viewBox="0 0 24 24" aria-hidden="true">
 					<circle cx="10.5" cy="10.5" r="6.5" />
 					<path d="m16 16 4 4" />
 				</svg>
-				<input id="filter" v-model="filter" type="search" placeholder="Filename or path" />
+				<input
+					id="mimimd:filter"
+					v-model="filter"
+					type="search"
+					placeholder="Filename or path"
+				/>
 			</div>
 			<FileTree
 				:entries="index.tree"
@@ -269,7 +274,7 @@ onUnmounted(() => {
 			</p>
 			<button class="mobile" @click="closeFiles">Close files</button>
 		</nav>
-		<main id="reading" tabindex="-1" @click="navigate">
+		<main id="mimimd:reading" tabindex="-1" @click="navigate">
 			<p class="path">
 				<svg viewBox="0 0 24 24" aria-hidden="true">
 					<path d="M6 3h8l4 4v14H6ZM14 3v5h4M9 12h6M9 16h4" />
@@ -291,7 +296,7 @@ onUnmounted(() => {
 			<p v-else role="status">Loading document…</p>
 		</main>
 		<nav
-			id="headings"
+			id="mimimd:headings"
 			aria-label="On this page"
 			:class="{ expanded: headingsOpen }"
 			@keydown.esc="closeHeadings"
@@ -407,7 +412,7 @@ nav {
 	overflow: auto;
 	font-size: 0.8rem;
 }
-#files {
+[id='mimimd:files'] {
 	background: color-mix(in srgb, var(--surface) 35%, var(--bg));
 	border-right: 1px solid var(--border);
 	min-height: calc(100dvh - 5.5rem);
@@ -464,12 +469,12 @@ input:focus-visible {
 	font-size: 0.7rem;
 	line-height: 1.9;
 }
-#headings ul {
+[id='mimimd:headings'] ul {
 	list-style: none;
 	padding: 0;
 	border-left: 1px solid var(--border);
 }
-#headings a {
+[id='mimimd:headings'] a {
 	display: block;
 	margin-left: -1px;
 	padding: 0.45rem 0;
@@ -480,8 +485,8 @@ input:focus-visible {
 	line-height: 1.6;
 	font-size: 0.75rem;
 }
-#headings a:hover,
-#headings a[aria-current] {
+[id='mimimd:headings'] a:hover,
+[id='mimimd:headings'] a[aria-current] {
 	color: var(--heading);
 	background: var(--active);
 	border-left-color: var(--green);
@@ -520,17 +525,17 @@ input:focus-visible {
 		border-bottom: 1px solid var(--border);
 		padding: 1.5rem;
 	}
-	#files {
+	[id='mimimd:files'] {
 		min-height: 0;
 		border-right: 0;
 	}
-	#headings {
+	[id='mimimd:headings'] {
 		grid-row: 1;
 	}
 	nav.expanded {
 		display: block;
 	}
-	#headings a {
+	[id='mimimd:headings'] a {
 		min-height: 2.75rem;
 		font-size: 0.875rem;
 	}

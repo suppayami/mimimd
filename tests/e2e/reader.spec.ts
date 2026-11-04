@@ -35,6 +35,23 @@ test('reads rich content, navigates history and persists theme', async ({ page }
 	await page.goto('/doc/README.md#repeat-1')
 	await expect(page.getByRole('heading', { name: 'Repeat', exact: true }).nth(1)).toBeInViewport()
 })
+test('heading fragments do not target application controls', async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 600 })
+	for (const name of ['Files', 'Reading', 'Filter', 'Headings', 'App']) {
+		await page.goto(`/doc/heading-collisions.md#${name.toLowerCase()}`)
+		await expect(page.getByRole('heading', { name, exact: true })).toBeInViewport()
+	}
+
+	await page.goto('/doc/heading-collisions.md')
+	await page.getByRole('link', { name: 'Jump to Files', exact: true }).click()
+	await expect(page.getByRole('heading', { name: 'Files', exact: true })).toBeInViewport()
+	await page
+		.getByRole('navigation', { name: 'On this page' })
+		.getByRole('link', { name: 'Reading', exact: true })
+		.click()
+	await expect(page.getByRole('heading', { name: 'Reading', exact: true })).toBeInViewport()
+})
+
 test('mobile navigation restores focus and filters files', async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 })
 	await page.goto('/')

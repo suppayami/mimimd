@@ -15,7 +15,7 @@ export class FileScope {
 		readonly root: string,
 		readonly selected: string | null,
 		readonly recursive: boolean,
-		private readonly ignoreRoot: string,
+		readonly ignoreRoot: string,
 	) {}
 
 	static async create(input: string, recursive = true) {

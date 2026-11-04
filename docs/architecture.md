@@ -48,7 +48,7 @@ Filesystem changes --> Chokidar --> SSE --> Browser refresh
 
 Folder mode scans recursively unless `--no-recursive` is set. Root `README.md`, then `index.md`, is preferred case-insensitively; otherwise, the first document in tree order is selected.
 
-A built-in matcher applies `.gitignore` rules from the nearest repository root (including worktrees) through nested folders, with negation, anchored paths, directory patterns, and Git wildcards. Outside a repository, rules start at the document/asset root. Ignored directories are not scanned; ignored documents and assets cannot be read directly, even in file mode. Symlinked `.gitignore` files are not followed. Each index or read uses fresh rules; Git itself and an ignore package are not required. Global Git excludes and `.git/info/exclude` are not used.
+A built-in matcher applies `.gitignore` rules from the nearest repository root (including worktrees) through nested folders, with negation, anchored paths, directory patterns, and Git wildcards. Outside a repository, rules start at the document/asset root. Ignored directories are not scanned; ignored documents and assets cannot be read directly, even in file mode. Symlinked `.gitignore` files are not followed. Each index or read uses fresh rules; Git itself and an ignore package are not required. The watcher tracks nested `.gitignore` files and applicable ancestor `.gitignore` files up to that repository root, including their creation and removal, so rule changes refresh connected readers. Global Git excludes and `.git/info/exclude` are not used.
 
 File mode exposes only the selected Markdown document and hides file navigation. Its parent directory is the asset root. Shallow folder mode excludes nested documents from both the index and direct document access, but still permits eligible nested assets.
 
@@ -97,7 +97,7 @@ Mermaid fences remain marked code blocks in the response; their SVG generation h
 5. The previous article stays visible with a small preparation indicator. Once all diagrams are ready, the component replaces the article's children in one commit and removes staging content. Obsolete render generations cannot commit, including when the active route changes before its response arrives.
 6. A completion event lets `App.vue` apply the correct heading fragment or navigation scroll position after the prepared DOM is available. Same-document updates preserve scroll where possible.
 
-The browser inserts rendered HTML as DOM; it never compiles Markdown as Vue templates. File disclosure controls, filtering, heading navigation, and theme selection are ordinary Vue components/state rather than a separate global store.
+The browser inserts rendered HTML as DOM; it never compiles Markdown as Vue templates. Application IDs use the `mimimd:` namespace: heading slugs strip colons, so document fragments cannot collide with shell controls. Markdown heading fragments remain unchanged. File disclosure controls, filtering, heading navigation, and theme selection are ordinary Vue components/state rather than a separate global store.
 
 Theme selection initially follows the OS and persists explicit choices in local storage. Shiki HTML contains both light and dark theme values; switching themes also prepares new Mermaid output. Palette provenance and licensing are documented in [theme attribution](theme-attribution.md).
 

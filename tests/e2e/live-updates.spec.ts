@@ -1,9 +1,10 @@
 import { spawn } from 'node:child_process'
-import { mkdtemp, rename, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
 test('refreshes edits and renames while retaining the active route and theme', async ({ page }) => {
 	const root = await mkdtemp(path.resolve('tests/.live-'))
+	await mkdir(path.join(root, '.git'))
 	const source = path.join(root, 'README.md')
 	const image = path.join(root, 'icon.svg')
 	await writeFile(

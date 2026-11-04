@@ -8,12 +8,16 @@ let app: Awaited<ReturnType<typeof startServer>>
 let root: string
 beforeAll(async () => {
 	root = await mkdtemp(path.resolve('tests/.http-'))
+	await mkdir(path.join(root, '.git'))
 	await mkdir(path.join(root, 'nested'))
 	await writeFile(path.join(root, 'README.md'), '# Home')
 	await writeFile(path.join(root, 'nested', 'guide.md'), '# Guide')
 	await writeFile(path.join(root, '.hidden.md'), 'private')
 	await writeFile(path.join(root, 'image.svg'), '<svg xmlns="http://www.w3.org/2000/svg"/>')
 	await writeFile(path.join(root, 'code.js'), 'alert(1)')
+	await writeFile(path.join(root, '.gitignore'), 'ignored.md\nignored.svg\n')
+	await writeFile(path.join(root, 'ignored.md'), '# Ignored')
+	await writeFile(path.join(root, 'ignored.svg'), '<svg/>')
 	await symlink(path.join(root, 'README.md'), path.join(root, 'link.md'))
 	app = await startServer(await FileScope.create(root, false), '127.0.0.1', 0)
 })
@@ -36,6 +40,8 @@ it('rejects excluded documents, hidden entries, symlinks, executable assets and 
 		'/api/document?path=link.md',
 		'/api/document?path=.hidden.md',
 		'/content/code.js',
+		'/api/document?path=ignored.md',
+		'/content/ignored.svg',
 		'/content/%2ehidden.md',
 	]) {
 		expect((await fetch(app.url + target)).status).toBe(404)

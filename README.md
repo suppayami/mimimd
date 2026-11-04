@@ -1,5 +1,8 @@
 # mimimd
 
+> [!CAUTION]
+> AI Slop, use at your own risk.
+
 A local Markdown reader built with Vue 3.5 and a Hono Node server. Requires Node **>=24**.
 
 ```sh

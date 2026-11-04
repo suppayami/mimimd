@@ -3,6 +3,7 @@ import { constants } from 'node:fs'
 import { lstat, open, readdir, realpath } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
+import { GitIgnore } from './gitignore.js'
 
 export const isMarkdown = (name: string) => /\.(?:md|markdown)$/i.test(name)
 
@@ -14,6 +15,7 @@ export class FileScope {
 		readonly root: string,
 		readonly selected: string | null,
 		readonly recursive: boolean,
+		private readonly ignoreRoot: string,
 	) {}
 
 	static async create(input: string, recursive = true) {
@@ -51,6 +53,7 @@ export class FileScope {
 			root,
 			stat.isDirectory() ? null : path.basename(absolute),
 			recursive,
+			await GitIgnore.findRoot(root),
 		)
 		if (scope.selected) {
 			await scope.read(scope.selected)
@@ -61,7 +64,7 @@ export class FileScope {
 		return scope
 	}
 
-	async checked(relative: string) {
+	async checked(relative: string, ignores = new GitIgnore(this.ignoreRoot)) {
 		if (
 			(await lstat(this.root)).isSymbolicLink() ||
 			(await realpath(this.root)) !== this.root
@@ -85,6 +88,10 @@ export class FileScope {
 			if ((await lstat(current)).isSymbolicLink()) {
 				throw new Error('Unavailable path')
 			}
+		}
+
+		if (await ignores.isIgnored(current, (await lstat(current)).isDirectory())) {
+			throw new Error('Unavailable path')
 		}
 
 		return current
@@ -128,9 +135,14 @@ export class FileScope {
 			throw new Error('Unavailable path')
 		}
 
+		const ignores = new GitIgnore(this.ignoreRoot)
+		if (await ignores.isIgnored(this.root, true)) {
+			throw new Error('Unavailable path')
+		}
+
 		const documents: string[] = []
 		const scan = async (prefix: string): Promise<Entry[]> => {
-			const names = await readdir(prefix ? await this.checked(prefix) : this.root, {
+			const names = await readdir(prefix ? await this.checked(prefix, ignores) : this.root, {
 				withFileTypes: true,
 			})
 
@@ -148,6 +160,10 @@ export class FileScope {
 				}
 
 				const relative = prefix ? `${prefix}/${item.name}` : item.name
+				if (await ignores.isIgnored(path.join(this.root, relative), item.isDirectory())) {
+					continue
+				}
+
 				if (item.isDirectory() && this.recursive && !this.selected) {
 					const children = await scan(relative)
 					if (children.length) {

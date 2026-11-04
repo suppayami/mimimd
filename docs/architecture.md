@@ -41,12 +41,14 @@ Filesystem changes --> Chokidar --> SSE --> Browser refresh
 
 1. The CLI handles help/version without requiring a document. Otherwise, it resolves the input relative to the caller's working directory.
 2. `FileScope.create()` validates the input, rejects symbolic-link input paths and private paths, and establishes the document/asset root.
-3. Discovery builds a deterministic tree of `.md` and `.markdown` files, case-insensitively. Hidden entries, `node_modules`, private entries, and symbolic links are excluded. Empty directories are omitted from the tree.
+3. Discovery builds a deterministic tree of `.md` and `.markdown` files, case-insensitively. Hidden entries, `node_modules`, private entries, symbolic links, and `.gitignore` matches are excluded. Empty directories are omitted from the tree.
 4. The server binds to the requested host and port, then starts the watcher. An occupied port is an error, not a reason to choose another port silently.
 5. The CLI prints the root and URL. Browser opening is opt-in; non-loopback binding prints an unauthenticated-access warning.
 6. SIGINT/SIGTERM closes the watcher, event streams, and HTTP connections.
 
 Folder mode scans recursively unless `--no-recursive` is set. Root `README.md`, then `index.md`, is preferred case-insensitively; otherwise, the first document in tree order is selected.
+
+A built-in matcher applies `.gitignore` rules from the nearest repository root (including worktrees) through nested folders, with negation, anchored paths, directory patterns, and Git wildcards. Outside a repository, rules start at the document/asset root. Ignored directories are not scanned; ignored documents and assets cannot be read directly, even in file mode. Symlinked `.gitignore` files are not followed. Each index or read uses fresh rules; Git itself and an ignore package are not required. Global Git excludes and `.git/info/exclude` are not used.
 
 File mode exposes only the selected Markdown document and hides file navigation. Its parent directory is the asset root. Shallow folder mode excludes nested documents from both the index and direct document access, but still permits eligible nested assets.
 

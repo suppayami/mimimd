@@ -40,7 +40,7 @@ fn.mockImplementationOnce(() => 'first call')
 
 ```ts
 const cart = {
-  getTotal: () => 100,
+	getTotal: () => 100,
 }
 
 const spy = vi.spyOn(cart, 'getTotal')
@@ -59,9 +59,13 @@ spy.mockRestore()
 Since v4, `vi.spyOn`/`vi.fn` can mock **constructors** — provide a `function` or `class` implementation (an arrow function throws "not a constructor"):
 
 ```ts
-const Spy = vi.spyOn(cart, 'Apples').mockImplementation(class {
-  getApples() { return 0 }
-})
+const Spy = vi.spyOn(cart, 'Apples').mockImplementation(
+	class {
+		getApples() {
+			return 0
+		}
+	},
+)
 const instance = new Spy()
 ```
 
@@ -71,10 +75,10 @@ Define per-argument behaviors without writing `if`/`switch` in `mockImplementati
 
 ```ts
 vi.when(db.findById)
-  .calledWith(1)
-  .thenResolve({ id: 1, name: 'Ella' })
-  .calledWith(2)
-  .thenResolve({ id: 2, name: 'Gracie' })
+	.calledWith(1)
+	.thenResolve({ id: 1, name: 'Ella' })
+	.calledWith(2)
+	.thenResolve({ id: 2, name: 'Gracie' })
 
 // Actions: thenReturn / thenThrow / thenResolve / thenReject (+ *Once variants)
 // `calledWith` supports asymmetric matchers
@@ -91,10 +95,10 @@ In runtimes with Explicit Resource Management (Node 24+, TS 5.2+), declare spies
 
 ```ts
 it('mocks console only here', () => {
-  using spy = vi.spyOn(console, 'log').mockImplementation(() => {})
-  debug('message')
-  expect(spy).toHaveBeenCalled()
-} ) // console.log restored automatically — no afterEach
+	using spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+	debug('message')
+	expect(spy).toHaveBeenCalled()
+}) // console.log restored automatically — no afterEach
 ```
 
 ## Module Mocking
@@ -104,13 +108,13 @@ it('mocks console only here', () => {
 ```ts
 // vi.mock is hoisted to top of file
 vi.mock('./api', () => ({
-  fetchUser: vi.fn(() => ({ id: 1, name: 'Mock' })),
+	fetchUser: vi.fn(() => ({ id: 1, name: 'Mock' })),
 }))
 
 import { fetchUser } from './api'
 
 test('mocked module', () => {
-  expect(fetchUser()).toEqual({ id: 1, name: 'Mock' })
+	expect(fetchUser()).toEqual({ id: 1, name: 'Mock' })
 })
 ```
 
@@ -120,7 +124,7 @@ Pass `import('./db.js')` instead of a string. TypeScript infers the module type,
 
 ```ts
 vi.mock(import('./db.js'), () => ({
-  getUser: vi.fn(),
+	getUser: vi.fn(),
 }))
 ```
 
@@ -128,11 +132,11 @@ vi.mock(import('./db.js'), () => ({
 
 ```ts
 vi.mock(import('./utils'), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    specificFunction: vi.fn(),
-  }
+	const actual = await importOriginal()
+	return {
+		...actual,
+		specificFunction: vi.fn(),
+	}
 })
 ```
 
@@ -145,13 +149,13 @@ vi.mock('./calculator', { spy: true })
 import { add } from './calculator'
 
 test('spy on module', () => {
-  const result = add(1, 2) // Real implementation
-  expect(result).toBe(3)
-  expect(add).toHaveBeenCalledWith(1, 2)
+	const result = add(1, 2) // Real implementation
+	expect(result).toBe(3)
+	expect(add).toHaveBeenCalledWith(1, 2)
 })
 ```
 
-### Manual Mocks (__mocks__)
+### Manual Mocks (**mocks**)
 
 ```
 src/
@@ -175,14 +179,14 @@ Not hoisted - use for dynamic imports:
 
 ```ts
 test('dynamic mock', async () => {
-  vi.doMock('./config', () => ({
-    apiUrl: 'http://test.local',
-  }))
-  
-  const { apiUrl } = await import('./config')
-  expect(apiUrl).toBe('http://test.local')
-  
-  vi.doUnmock('./config')
+	vi.doMock('./config', () => ({
+		apiUrl: 'http://test.local',
+	}))
+
+	const { apiUrl } = await import('./config')
+	expect(apiUrl).toBe('http://test.local')
+
+	vi.doUnmock('./config')
 })
 ```
 
@@ -192,26 +196,26 @@ test('dynamic mock', async () => {
 import { afterEach, beforeEach, vi } from 'vitest'
 
 beforeEach(() => {
-  vi.useFakeTimers()
+	vi.useFakeTimers()
 })
 
 afterEach(() => {
-  vi.useRealTimers()
+	vi.useRealTimers()
 })
 
 test('timers', () => {
-  const fn = vi.fn()
-  setTimeout(fn, 1000)
-  
-  expect(fn).not.toHaveBeenCalled()
-  
-  vi.advanceTimersByTime(1000)
-  expect(fn).toHaveBeenCalled()
+	const fn = vi.fn()
+	setTimeout(fn, 1000)
+
+	expect(fn).not.toHaveBeenCalled()
+
+	vi.advanceTimersByTime(1000)
+	expect(fn).toHaveBeenCalled()
 })
 
 // Other timer methods
-vi.runAllTimers()           // Run all pending timers
-vi.runOnlyPendingTimers()   // Run only currently pending
+vi.runAllTimers() // Run all pending timers
+vi.runOnlyPendingTimers() // Run only currently pending
 vi.advanceTimersToNextTimer() // Advance to next timer
 ```
 
@@ -219,13 +223,19 @@ vi.advanceTimersToNextTimer() // Advance to next timer
 
 ```ts
 test('async timers', async () => {
-  vi.useFakeTimers()
-  
-  let resolved = false
-  setTimeout(() => Promise.resolve().then(() => { resolved = true }), 100)
-  
-  await vi.advanceTimersByTimeAsync(100)
-  expect(resolved).toBe(true)
+	vi.useFakeTimers()
+
+	let resolved = false
+	setTimeout(
+		() =>
+			Promise.resolve().then(() => {
+				resolved = true
+			}),
+		100,
+	)
+
+	await vi.advanceTimersByTimeAsync(100)
+	expect(resolved).toBe(true)
 })
 ```
 
@@ -257,9 +267,10 @@ While fake timers are on, `vi.waitFor`/`vi.waitUntil` advance timers by `interva
 ## Mock Globals
 
 ```ts
-vi.stubGlobal('fetch', vi.fn(() => 
-  Promise.resolve({ json: () => ({ data: 'mock' }) })
-))
+vi.stubGlobal(
+	'fetch',
+	vi.fn(() => Promise.resolve({ json: () => ({ data: 'mock' }) })),
+)
 
 // Restore
 vi.unstubAllGlobals()
@@ -281,9 +292,9 @@ vi.unstubAllEnvs()
 const fn = vi.fn()
 fn()
 
-fn.mockClear()       // Clear call history
-fn.mockReset()       // Clear history + implementation
-fn.mockRestore()     // Restore original (for spies)
+fn.mockClear() // Clear call history
+fn.mockReset() // Clear history + implementation
+fn.mockRestore() // Restore original (for spies)
 
 // Global
 vi.clearAllMocks()
@@ -296,13 +307,13 @@ vi.restoreAllMocks()
 ```ts
 // vitest.config.ts
 defineConfig({
-  test: {
-    clearMocks: true,    // Clear call history before each test — v5 DEFAULT
-    mockReset: true,     // Reset before each test
-    restoreMocks: true,  // Restore after each test
-    unstubEnvs: true,    // Restore env vars
-    unstubGlobals: true, // Restore globals
-  },
+	test: {
+		clearMocks: true, // Clear call history before each test — v5 DEFAULT
+		mockReset: true, // Reset before each test
+		restoreMocks: true, // Restore after each test
+		unstubEnvs: true, // Restore env vars
+		unstubGlobals: true, // Restore globals
+	},
 })
 ```
 
@@ -314,14 +325,14 @@ defineConfig({
 const mockFn = vi.hoisted(() => vi.fn())
 
 vi.mock('./module', () => ({
-  getData: mockFn,
+	getData: mockFn,
 }))
 
 import { getData } from './module'
 
 test('hoisted mock', () => {
-  mockFn.mockReturnValue('test')
-  expect(getData()).toBe('test')
+	mockFn.mockReturnValue('test')
+	expect(getData()).toBe('test')
 })
 ```
 
@@ -346,7 +357,7 @@ test('hoisted mock', () => {
 - `vi.hoisted` lets you reference variables in mock factories
 - Prefer `vi.mock(import('./mod'), factory)` over a string path for type-checked factories
 
-<!-- 
+<!--
 Source references:
 - https://vitest.dev/guide/mocking.html
 - https://vitest.dev/guide/learn/mock-functions

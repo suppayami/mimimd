@@ -1,23 +1,29 @@
 {
-  "version": 1,
-  "skills": {
-    "vite": {
-      "source": "antfu/skills",
-      "sourceType": "github",
-      "skillPath": "skills/vite/SKILL.md",
-      "computedHash": "88ee465fd10f711efecc76e91e96accae2b229dda371614dcf219099c264a486"
-    },
-    "vitest": {
-      "source": "antfu/skills",
-      "sourceType": "github",
-      "skillPath": "skills/vitest/SKILL.md",
-      "computedHash": "90f1cee9326269c91b46a601b3a575491505d8e771009dacff01329381d45291"
-    },
-    "vue": {
-      "source": "antfu/skills",
-      "sourceType": "github",
-      "skillPath": "skills/vue/SKILL.md",
-      "computedHash": "29ad402cf2ff868b3b43160883fbc42e135223655a41d16092d0d205f2c1ed31"
-    }
-  }
+	"version": 1,
+	"skills": {
+		"hono": {
+			"source": "honojs/skills",
+			"sourceType": "github",
+			"skillPath": "skills/hono/SKILL.md",
+			"computedHash": "f469bac28a53d010bb47bd61109d0cfebe9a4f3fd407310746114549886b5870"
+		},
+		"vite": {
+			"source": "antfu/skills",
+			"sourceType": "github",
+			"skillPath": "skills/vite/SKILL.md",
+			"computedHash": "88ee465fd10f711efecc76e91e96accae2b229dda371614dcf219099c264a486"
+		},
+		"vitest": {
+			"source": "antfu/skills",
+			"sourceType": "github",
+			"skillPath": "skills/vitest/SKILL.md",
+			"computedHash": "90f1cee9326269c91b46a601b3a575491505d8e771009dacff01329381d45291"
+		},
+		"vue": {
+			"source": "antfu/skills",
+			"sourceType": "github",
+			"skillPath": "skills/vue/SKILL.md",
+			"computedHash": "29ad402cf2ff868b3b43160883fbc42e135223655a41d16092d0d205f2c1ed31"
+		}
+	}
 }

@@ -16,9 +16,9 @@ const modules = import.meta.glob('./dir/*.ts')
 // { './dir/foo.ts': () => import('./dir/foo.ts'), ... }
 
 for (const path in modules) {
-  modules[path]().then((mod) => {
-    console.log(path, mod)
-  })
+	modules[path]().then((mod) => {
+		console.log(path, mod)
+	})
 }
 ```
 
@@ -88,8 +88,8 @@ import shaderCode from './shader.glsl?raw'
 ### Inline/No-Inline
 
 ```ts
-import inlined from './small.png?inline'    // Force base64 inline
-import notInlined from './large.png?no-inline'  // Force separate file
+import inlined from './small.png?inline' // Force base64 inline
+import notInlined from './large.png?no-inline' // Force separate file
 ```
 
 ### Web Workers
@@ -106,7 +106,7 @@ Preferred pattern using constructor:
 
 ```ts
 const worker = new Worker(new URL('./worker.ts', import.meta.url), {
-  type: 'module',
+	type: 'module',
 })
 ```
 
@@ -115,11 +115,11 @@ const worker = new Worker(new URL('./worker.ts', import.meta.url), {
 ### Built-in Constants
 
 ```ts
-import.meta.env.MODE      // 'development' | 'production' | custom
-import.meta.env.BASE_URL  // Base URL from config
-import.meta.env.PROD      // true in production
-import.meta.env.DEV       // true in development
-import.meta.env.SSR       // true when running in server
+import.meta.env.MODE // 'development' | 'production' | custom
+import.meta.env.BASE_URL // Base URL from config
+import.meta.env.PROD // true in production
+import.meta.env.DEV // true in development
+import.meta.env.SSR // true when running in server
 ```
 
 ### Custom Variables
@@ -134,7 +134,7 @@ DB_PASSWORD=secret  # NOT exposed to client
 
 ```ts
 console.log(import.meta.env.VITE_API_URL) // works
-console.log(import.meta.env.DB_PASSWORD)  // undefined
+console.log(import.meta.env.DB_PASSWORD) // undefined
 ```
 
 ### Mode-specific Files
@@ -151,11 +151,11 @@ console.log(import.meta.env.DB_PASSWORD)  // undefined
 ```ts
 // vite-env.d.ts
 interface ImportMetaEnv {
-  readonly VITE_API_URL: string
+	readonly VITE_API_URL: string
 }
 
 interface ImportMeta {
-  readonly env: ImportMetaEnv
+	readonly env: ImportMetaEnv
 }
 ```
 
@@ -163,7 +163,9 @@ interface ImportMeta {
 
 ```html
 <p>Running in %MODE%</p>
-<script>window.API = "%VITE_API_URL%"</script>
+<script>
+	window.API = '%VITE_API_URL%'
+</script>
 ```
 
 ## CSS Modules
@@ -186,22 +188,22 @@ import { myClass } from './component.module.css'
 
 ```ts
 import pkg from './package.json'
-import { version } from './package.json'  // Named import with tree-shaking
+import { version } from './package.json' // Named import with tree-shaking
 ```
 
 ## HMR API
 
 ```ts
 if (import.meta.hot) {
-  import.meta.hot.accept((newModule) => {
-    // Handle update
-  })
-  
-  import.meta.hot.dispose((data) => {
-    // Cleanup before module is replaced
-  })
-  
-  import.meta.hot.invalidate()  // Force full reload
+	import.meta.hot.accept((newModule) => {
+		// Handle update
+	})
+
+	import.meta.hot.dispose((data) => {
+		// Cleanup before module is replaced
+	})
+
+	import.meta.hot.invalidate() // Force full reload
 }
 ```
 
@@ -222,7 +224,7 @@ For TS support, enable `allowArbitraryExtensions` and add `add.d.wasm.ts`. SSR b
 
 ```js
 import init from './example.wasm?init'
-const instance = await init({ imports: { /* ... */ } })
+const instance = await init({ imports: {/* ... */} })
 instance.exports.test()
 ```
 

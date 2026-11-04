@@ -14,9 +14,9 @@ Vitest reads configuration from `vitest.config.ts` or `vite.config.ts`. It share
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  test: {
-    // test options
-  },
+	test: {
+		// test options
+	},
 })
 ```
 
@@ -30,10 +30,10 @@ Add Vitest types reference and use the `test` property:
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'jsdom',
-  },
+	test: {
+		globals: true,
+		environment: 'jsdom',
+	},
 })
 ```
 
@@ -46,74 +46,77 @@ If you have separate config files, use `mergeConfig`:
 import { defineConfig, mergeConfig } from 'vitest/config'
 import viteConfig from './vite.config'
 
-export default mergeConfig(viteConfig, defineConfig({
-  test: {
-    environment: 'jsdom',
-  },
-}))
+export default mergeConfig(
+	viteConfig,
+	defineConfig({
+		test: {
+			environment: 'jsdom',
+		},
+	}),
+)
 ```
 
 ## Common Options
 
 ```ts
 defineConfig({
-  test: {
-    // Enable global APIs (describe, it, expect) without imports
-    globals: true,
-    
-    // Test environment: 'node', 'jsdom', 'happy-dom'
-    environment: 'node',
-    
-    // Setup files to run before each test file
-    setupFiles: ['./tests/setup.ts'],
-    
-    // Include patterns for test files
-    include: ['**/*.{test,spec}.{js,ts,jsx,tsx}'],
-    
-    // Exclude patterns
-    exclude: ['**/node_modules/**', '**/dist/**'],
-    
-    // Limit test discovery to a directory (faster than broad excludes)
-    dir: './src',
+	test: {
+		// Enable global APIs (describe, it, expect) without imports
+		globals: true,
 
-    // Test timeout in ms
-    testTimeout: 5000,
-    
-    // Hook timeout in ms
-    hookTimeout: 10000,
-    
-    // Coverage configuration (v4+: define `include`, no more `all`)
-    coverage: {
-      provider: 'v8', // or 'istanbul'
-      reporter: ['text', 'html'],
-      include: ['src/**/*.ts'],
-    },
-    
-    // Run each file in an isolated module graph (threads/forks pools only)
-    isolate: true,
-    
-    // Pool: 'forks' (default), 'threads', 'vmForks', 'vmThreads'
-    pool: 'forks',
-    
-    // v4+: pool options are top-level (poolOptions was removed)
-    maxWorkers: 4,
-    fileParallelism: true,
-    
-    // Clear mock call history before each test (v5: defaults to true)
-    clearMocks: true,
-    
-    // Restore spies created with vi.spyOn between tests
-    restoreMocks: true,
-    
-    // Retry failed tests
-    retry: 0,
-    
-    // Stop after first failure
-    bail: 0,
+		// Test environment: 'node', 'jsdom', 'happy-dom'
+		environment: 'node',
 
-    // v5: repeat every test N times regardless of result (flaky-hunting)
-    repeats: 0,
-  },
+		// Setup files to run before each test file
+		setupFiles: ['./tests/setup.ts'],
+
+		// Include patterns for test files
+		include: ['**/*.{test,spec}.{js,ts,jsx,tsx}'],
+
+		// Exclude patterns
+		exclude: ['**/node_modules/**', '**/dist/**'],
+
+		// Limit test discovery to a directory (faster than broad excludes)
+		dir: './src',
+
+		// Test timeout in ms
+		testTimeout: 5000,
+
+		// Hook timeout in ms
+		hookTimeout: 10000,
+
+		// Coverage configuration (v4+: define `include`, no more `all`)
+		coverage: {
+			provider: 'v8', // or 'istanbul'
+			reporter: ['text', 'html'],
+			include: ['src/**/*.ts'],
+		},
+
+		// Run each file in an isolated module graph (threads/forks pools only)
+		isolate: true,
+
+		// Pool: 'forks' (default), 'threads', 'vmForks', 'vmThreads'
+		pool: 'forks',
+
+		// v4+: pool options are top-level (poolOptions was removed)
+		maxWorkers: 4,
+		fileParallelism: true,
+
+		// Clear mock call history before each test (v5: defaults to true)
+		clearMocks: true,
+
+		// Restore spies created with vi.spyOn between tests
+		restoreMocks: true,
+
+		// Retry failed tests
+		retry: 0,
+
+		// Stop after first failure
+		bail: 0,
+
+		// v5: repeat every test N times regardless of result (flaky-hunting)
+		repeats: 0,
+	},
 })
 ```
 
@@ -121,24 +124,24 @@ defineConfig({
 
 ```ts
 defineConfig({
-  test: {
-    // Persist transformed modules on disk, reused across reruns AND separate
-    // processes (stable in v5; was experimental.fsModuleCache). Cache lives in
-    // node_modules by default; clear with `vitest --clearCache`. Not for browser.
-    fsModuleCache: true,
+	test: {
+		// Persist transformed modules on disk, reused across reruns AND separate
+		// processes (stable in v5; was experimental.fsModuleCache). Cache lives in
+		// node_modules by default; clear with `vitest --clearCache`. Not for browser.
+		fsModuleCache: true,
 
-    // Inline projects that don't change the Vite config reuse the declaring
-    // config's Vite server (default true) — shared files transformed once.
-    // Set false if a plugin must be re-instantiated per project.
-    sharedViteServer: true,
+		// Inline projects that don't change the Vite config reuse the declaring
+		// config's Vite server (default true) — shared files transformed once.
+		// Set false if a plugin must be re-instantiated per project.
+		sharedViteServer: true,
 
-    // Inject CJS globals (module/exports/require/__filename/__dirname) into
-    // every module (default true). Set false for stricter ESM-like scope.
-    injectCjsGlobals: false,
+		// Inject CJS globals (module/exports/require/__filename/__dirname) into
+		// every module (default true). Set false for stricter ESM-like scope.
+		injectCjsGlobals: false,
 
-    // Detect async resources leaking past a test file (slow; debugging only)
-    detectAsyncLeaks: false,
-  },
+		// Detect async resources leaking past a test file (slow; debugging only)
+		detectAsyncLeaks: false,
+	},
 })
 ```
 
@@ -175,10 +178,10 @@ Use `mode` or `process.env.VITEST` for test-specific config:
 
 ```ts
 export default defineConfig(({ mode }) => ({
-  plugins: mode === 'test' ? [] : [myPlugin()],
-  test: {
-    // test options
-  },
+	plugins: mode === 'test' ? [] : [myPlugin()],
+	test: {
+		// test options
+	},
 }))
 ```
 
@@ -188,25 +191,25 @@ Run different configurations in the same Vitest process:
 
 ```ts
 defineConfig({
-  test: {
-    projects: [
-      'packages/*',
-      {
-        test: {
-          name: 'unit',
-          include: ['tests/unit/**/*.test.ts'],
-          environment: 'node',
-        },
-      },
-      {
-        test: {
-          name: 'integration',
-          include: ['tests/integration/**/*.test.ts'],
-          environment: 'jsdom',
-        },
-      },
-    ],
-  },
+	test: {
+		projects: [
+			'packages/*',
+			{
+				test: {
+					name: 'unit',
+					include: ['tests/unit/**/*.test.ts'],
+					environment: 'node',
+				},
+			},
+			{
+				test: {
+					name: 'integration',
+					include: ['tests/integration/**/*.test.ts'],
+					environment: 'jsdom',
+				},
+			},
+		],
+	},
 })
 ```
 
@@ -219,7 +222,7 @@ defineConfig({
 - Test config uses `test` property, rest is Vite config
 - v5 requires **Vite >= 6.4.0** and **Node >= 22.12.0**; `vite` is a required peer dependency
 
-<!-- 
+<!--
 Source references:
 - https://vitest.dev/guide/#configuring-vitest
 - https://vitest.dev/config/

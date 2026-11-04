@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"target": "ES2024",
+		"lib": ["ES2024", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"types": ["vite/client"],
+		"strict": true,
+		"noEmit": true,
+		"skipLibCheck": true
+	},
+	"include": ["src/web/**/*.ts", "src/web/**/*.vue", "src/contracts.ts", "src/themes/**/*.ts"]
+}

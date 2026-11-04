@@ -74,7 +74,7 @@ Useful with lint-staged:
 ```js
 // .lintstagedrc.js
 export default {
-  '*.{ts,tsx}': 'vitest related --run',
+	'*.{ts,tsx}': 'vitest related --run',
 }
 ```
 
@@ -84,7 +84,7 @@ export default {
 test.only('only this runs', () => {})
 
 describe.only('only this suite', () => {
-  test('runs', () => {})
+	test('runs', () => {})
 })
 ```
 
@@ -92,9 +92,9 @@ In CI, `.only` throws error unless configured:
 
 ```ts
 defineConfig({
-  test: {
-    allowOnly: true, // Allow .only in CI
-  },
+	test: {
+		allowOnly: true, // Allow .only in CI
+	},
 })
 ```
 
@@ -109,7 +109,7 @@ test.runIf(!process.env.CI)('local only', () => {})
 
 // Dynamic skip
 test('dynamic', ({ skip }) => {
-  skip(someCondition, 'reason')
+	skip(someCondition, 'reason')
 })
 ```
 
@@ -120,9 +120,9 @@ Tags must be declared in config, then applied to tests/suites and filtered with 
 ```ts
 // vitest.config.ts
 defineConfig({
-  test: {
-    tags: [{ name: 'db' }, { name: 'slow' }, { name: 'flaky' }],
-  },
+	test: {
+		tags: [{ name: 'db' }, { name: 'slow' }, { name: 'flaky' }],
+	},
 })
 
 // test file
@@ -141,23 +141,19 @@ Full syntax, priority, and per-tag options: see [features-test-tags](features-te
 
 ```ts
 defineConfig({
-  test: {
-    // Test file patterns
-    include: ['**/*.{test,spec}.{ts,tsx}'],
-    
-    // Exclude patterns
-    exclude: [
-      '**/node_modules/**',
-      '**/e2e/**',
-      '**/*.skip.test.ts',
-    ],
-    
-    // Include source for in-source testing
-    includeSource: ['src/**/*.ts'],
+	test: {
+		// Test file patterns
+		include: ['**/*.{test,spec}.{ts,tsx}'],
 
-    // Scope discovery to a directory (faster than broad excludes)
-    dir: './src',
-  },
+		// Exclude patterns
+		exclude: ['**/node_modules/**', '**/e2e/**', '**/*.skip.test.ts'],
+
+		// Include source for in-source testing
+		includeSource: ['src/**/*.ts'],
+
+		// Scope discovery to a directory (faster than broad excludes)
+		dir: './src',
+	},
 })
 ```
 
@@ -166,6 +162,7 @@ defineConfig({
 ## Watch Mode Filtering
 
 In watch mode, press:
+
 - `p` - Filter by filename pattern
 - `t` - Filter by test name pattern
 - `a` - Run all tests
@@ -219,7 +216,7 @@ vitest list --json          # JSON output
 - Use `.only` for debugging, but configure CI to reject it
 - Watch mode has interactive filtering
 
-<!-- 
+<!--
 Source references:
 - https://vitest.dev/guide/filtering.html
 - https://vitest.dev/guide/cli.html

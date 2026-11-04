@@ -5,7 +5,7 @@ description: Label tests with tags to filter runs and apply shared runner option
 
 # Test Tags (4.1+)
 
-Tags label tests so you can filter what runs and apply shared options (timeout, retry) to a *category* of tests that span many files. Reach for tags over projects when the category needs different timeouts/retries (not different pools/environments).
+Tags label tests so you can filter what runs and apply shared options (timeout, retry) to a _category_ of tests that span many files. Reach for tags over projects when the category needs different timeouts/retries (not different pools/environments).
 
 ## Defining Tags
 
@@ -16,19 +16,19 @@ Tags **must be declared in config** — using an undefined tag throws unless `st
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  test: {
-    tags: [
-      { name: 'frontend', description: 'Frontend tests.' },
-      { name: 'db', description: 'Database queries.', timeout: 60_000 },
-      {
-        name: 'flaky',
-        retry: process.env.CI ? 3 : 0,
-        timeout: 30_000,
-        priority: 1, // lower priority number wins on conflicts
-      },
-    ],
-    strictTags: true, // default: error on unknown tags
-  },
+	test: {
+		tags: [
+			{ name: 'frontend', description: 'Frontend tests.' },
+			{ name: 'db', description: 'Database queries.', timeout: 60_000 },
+			{
+				name: 'flaky',
+				retry: process.env.CI ? 3 : 0,
+				timeout: 30_000,
+				priority: 1, // lower priority number wins on conflicts
+			},
+		],
+		strictTags: true, // default: error on unknown tags
+	},
 })
 ```
 
@@ -38,9 +38,9 @@ Type-safe tag names (augment `TestTags`, include the file in your tsconfig):
 import 'vitest'
 
 declare module 'vitest' {
-  interface TestTags {
-    tags: 'frontend' | 'backend' | 'db' | 'flaky'
-  }
+	interface TestTags {
+		tags: 'frontend' | 'backend' | 'db' | 'flaky'
+	}
 }
 ```
 
@@ -53,9 +53,9 @@ test('renders homepage', { tags: ['frontend'] }, () => {})
 
 // Tags inherit from the parent suite
 describe('API endpoints', { tags: ['backend'] }, () => {
-  test('validates input', { tags: ['validation'] }, () => {
-    // has both "backend" (inherited) and "validation"
-  })
+	test('validates input', { tags: ['validation'] }, () => {
+		// has both "backend" (inherited) and "validation"
+	})
 })
 ```
 
@@ -101,9 +101,9 @@ Skip expensive setup when no matching tests are scheduled:
 import { beforeAll, TestRunner } from 'vitest'
 
 beforeAll(async () => {
-  if (TestRunner.matchesTags(['db'])) {
-    await seedDatabase()
-  }
+	if (TestRunner.matchesTags(['db'])) {
+		await seedDatabase()
+	}
 })
 ```
 

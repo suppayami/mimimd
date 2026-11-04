@@ -2,9 +2,9 @@
 name: vue
 description: Vue 3 Composition API, script setup macros, reactivity system, and built-in components. Use when writing Vue SFCs, defineProps/defineEmits/defineModel, watchers, or using Transition/Teleport/Suspense/KeepAlive.
 metadata:
-  author: Anthony Fu
-  version: "2026.9.25"
-  source: Generated from https://github.com/vuejs/docs, scripts at https://github.com/antfu/skills
+    author: Anthony Fu
+    version: '2026.9.25'
+    source: Generated from https://github.com/vuejs/docs, scripts at https://github.com/antfu/skills
 ---
 
 # Vue
@@ -21,15 +21,15 @@ metadata:
 
 ## Core
 
-| Topic | Description | Reference |
-|-------|-------------|-----------|
-| Script Setup & Macros | `<script setup>`, defineProps, defineEmits, defineModel, defineExpose, defineOptions, defineSlots, generics | [script-setup-macros](references/script-setup-macros.md) |
-| Reactivity & Lifecycle | ref, shallowRef, computed, watch, watchEffect, effectScope, lifecycle hooks, composables | [core-new-apis](references/core-new-apis.md) |
+| Topic                  | Description                                                                                                 | Reference                                                |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Script Setup & Macros  | `<script setup>`, defineProps, defineEmits, defineModel, defineExpose, defineOptions, defineSlots, generics | [script-setup-macros](references/script-setup-macros.md) |
+| Reactivity & Lifecycle | ref, shallowRef, computed, watch, watchEffect, effectScope, lifecycle hooks, composables                    | [core-new-apis](references/core-new-apis.md)             |
 
 ## Features
 
-| Topic | Description | Reference |
-|-------|-------------|-----------|
+| Topic                            | Description                                                          | Reference                                            |
+| -------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------- |
 | Built-in Components & Directives | Transition, Teleport, Suspense, KeepAlive, v-memo, custom directives | [advanced-patterns](references/advanced-patterns.md) |
 
 ## Quick Reference
@@ -41,29 +41,32 @@ metadata:
 import { ref, computed, watch, onMounted } from 'vue'
 
 const props = defineProps<{
-  title: string
-  count?: number
+	title: string
+	count?: number
 }>()
 
 const emit = defineEmits<{
-  update: [value: string]
+	update: [value: string]
 }>()
 
 const model = defineModel<string>()
 
 const doubled = computed(() => (props.count ?? 0) * 2)
 
-watch(() => props.title, (newVal) => {
-  console.log('Title changed:', newVal)
-})
+watch(
+	() => props.title,
+	(newVal) => {
+		console.log('Title changed:', newVal)
+	},
+)
 
 onMounted(() => {
-  console.log('Component mounted')
+	console.log('Component mounted')
 })
 </script>
 
 <template>
-  <div>{{ title }} - {{ doubled }}</div>
+	<div>{{ title }} - {{ doubled }}</div>
 </template>
 ```
 
@@ -77,7 +80,14 @@ import { ref, shallowRef, computed, reactive, readonly, toRef, toRefs, toValue }
 import { watch, watchEffect, watchPostEffect, onWatcherCleanup } from 'vue'
 
 // Lifecycle
-import { onMounted, onUpdated, onUnmounted, onBeforeMount, onBeforeUpdate, onBeforeUnmount } from 'vue'
+import {
+	onMounted,
+	onUpdated,
+	onUnmounted,
+	onBeforeMount,
+	onBeforeUpdate,
+	onBeforeUnmount,
+} from 'vue'
 
 // Utilities
 import { nextTick, defineComponent, defineAsyncComponent } from 'vue'

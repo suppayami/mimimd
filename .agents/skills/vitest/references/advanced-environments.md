@@ -17,16 +17,16 @@ description: Configure environments like jsdom, happy-dom for browser APIs
 ```ts
 // vitest.config.ts
 defineConfig({
-  test: {
-    environment: 'jsdom',
-    
-    // Environment-specific options
-    environmentOptions: {
-      jsdom: {
-        url: 'http://localhost',
-      },
-    },
-  },
+	test: {
+		environment: 'jsdom',
+
+		// Environment-specific options
+		environmentOptions: {
+			jsdom: {
+				url: 'http://localhost',
+			},
+		},
+	},
 })
 ```
 
@@ -50,8 +50,8 @@ Use magic comment at top of file:
 import { expect, test } from 'vitest'
 
 test('DOM test', () => {
-  const div = document.createElement('div')
-  expect(div).toBeInstanceOf(HTMLDivElement)
+	const div = document.createElement('div')
+	expect(div).toBeInstanceOf(HTMLDivElement)
 })
 ```
 
@@ -63,17 +63,17 @@ Full browser environment simulation:
 // @vitest-environment jsdom
 
 test('DOM manipulation', () => {
-  document.body.innerHTML = '<div id="app"></div>'
-  
-  const app = document.getElementById('app')
-  app.textContent = 'Hello'
-  
-  expect(app.textContent).toBe('Hello')
+	document.body.innerHTML = '<div id="app"></div>'
+
+	const app = document.getElementById('app')
+	app.textContent = 'Hello'
+
+	expect(app.textContent).toBe('Hello')
 })
 
 test('window APIs', () => {
-  expect(window.location.href).toBeDefined()
-  expect(localStorage).toBeDefined()
+	expect(window.location.href).toBeDefined()
+	expect(localStorage).toBeDefined()
 })
 ```
 
@@ -81,16 +81,16 @@ test('window APIs', () => {
 
 ```ts
 defineConfig({
-  test: {
-    environmentOptions: {
-      jsdom: {
-        url: 'http://localhost:3000',
-        html: '<!DOCTYPE html><html><body></body></html>',
-        userAgent: 'custom-agent',
-        resources: 'usable',
-      },
-    },
-  },
+	test: {
+		environmentOptions: {
+			jsdom: {
+				url: 'http://localhost:3000',
+				html: '<!DOCTYPE html><html><body></body></html>',
+				userAgent: 'custom-agent',
+				resources: 'usable',
+			},
+		},
+	},
 })
 ```
 
@@ -102,9 +102,9 @@ Faster but fewer APIs:
 // @vitest-environment happy-dom
 
 test('basic DOM', () => {
-  const el = document.createElement('div')
-  el.className = 'test'
-  expect(el.className).toBe('test')
+	const el = document.createElement('div')
+	el.className = 'test'
+	expect(el.className).toBe('test')
 })
 ```
 
@@ -114,24 +114,24 @@ Use projects for different environments:
 
 ```ts
 defineConfig({
-  test: {
-    projects: [
-      {
-        test: {
-          name: 'unit',
-          include: ['tests/unit/**/*.test.ts'],
-          environment: 'node',
-        },
-      },
-      {
-        test: {
-          name: 'dom',
-          include: ['tests/dom/**/*.test.ts'],
-          environment: 'jsdom',
-        },
-      },
-    ],
-  },
+	test: {
+		projects: [
+			{
+				test: {
+					name: 'unit',
+					include: ['tests/unit/**/*.test.ts'],
+					environment: 'node',
+				},
+			},
+			{
+				test: {
+					name: 'dom',
+					include: ['tests/dom/**/*.test.ts'],
+					environment: 'jsdom',
+				},
+			},
+		],
+	},
 })
 ```
 
@@ -144,19 +144,19 @@ Create custom environment package:
 import type { Environment } from 'vitest/runtime'
 
 export default <Environment>{
-  name: 'custom',
-  viteEnvironment: 'ssr', // or 'client'
-  
-  setup() {
-    // Setup global state
-    globalThis.myGlobal = 'value'
-    
-    return {
-      teardown() {
-        delete globalThis.myGlobal
-      },
-    }
-  },
+	name: 'custom',
+	viteEnvironment: 'ssr', // or 'client'
+
+	setup() {
+		// Setup global state
+		globalThis.myGlobal = 'value'
+
+		return {
+			teardown() {
+				delete globalThis.myGlobal
+			},
+		}
+	},
 }
 ```
 
@@ -164,9 +164,9 @@ Use with:
 
 ```ts
 defineConfig({
-  test: {
-    environment: 'custom',
-  },
+	test: {
+		environment: 'custom',
+	},
 })
 ```
 
@@ -176,24 +176,24 @@ For full isolation:
 
 ```ts
 export default <Environment>{
-  name: 'isolated',
-  viteEnvironment: 'ssr',
-  
-  async setupVM() {
-    const vm = await import('node:vm')
-    const context = vm.createContext()
-    
-    return {
-      getVmContext() {
-        return context
-      },
-      teardown() {},
-    }
-  },
-  
-  setup() {
-    return { teardown() {} }
-  },
+	name: 'isolated',
+	viteEnvironment: 'ssr',
+
+	async setupVM() {
+		const vm = await import('node:vm')
+		const context = vm.createContext()
+
+		return {
+			getVmContext() {
+				return context
+			},
+			teardown() {},
+		}
+	},
+
+	setup() {
+		return { teardown() {} }
+	},
 }
 ```
 
@@ -205,13 +205,13 @@ For real browser testing, use Vitest Browser Mode. In **v4 the provider is an ob
 import { playwright } from '@vitest/browser-playwright'
 
 defineConfig({
-  test: {
-    browser: {
-      enabled: true,
-      provider: playwright({ launchOptions: { slowMo: 100 } }),
-      instances: [{ browser: 'chromium' }], // or 'firefox', 'webkit'
-    },
-  },
+	test: {
+		browser: {
+			enabled: true,
+			provider: playwright({ launchOptions: { slowMo: 100 } }),
+			instances: [{ browser: 'chromium' }], // or 'firefox', 'webkit'
+		},
+	},
 })
 ```
 
@@ -227,17 +227,17 @@ In jsdom/happy-dom, configure CSS handling:
 
 ```ts
 defineConfig({
-  test: {
-    css: true, // Process CSS
-    
-    // Or with options
-    css: {
-      include: /\.module\.css$/,
-      modules: {
-        classNameStrategy: 'non-scoped',
-      },
-    },
-  },
+	test: {
+		css: true, // Process CSS
+
+		// Or with options
+		css: {
+			include: /\.module\.css$/,
+			modules: {
+				classNameStrategy: 'non-scoped',
+			},
+		},
+	},
 })
 ```
 
@@ -247,13 +247,13 @@ If external deps fail with CSS/asset errors:
 
 ```ts
 defineConfig({
-  test: {
-    server: {
-      deps: {
-        inline: ['problematic-package'],
-      },
-    },
-  },
+	test: {
+		server: {
+			deps: {
+				inline: ['problematic-package'],
+			},
+		},
+	},
 })
 ```
 
@@ -266,7 +266,7 @@ defineConfig({
 - Use projects for multiple environment configurations
 - Browser Mode is for real browser testing, not environment
 
-<!-- 
+<!--
 Source references:
 - https://vitest.dev/guide/environment.html
 -->

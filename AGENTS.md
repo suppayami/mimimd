@@ -30,6 +30,7 @@
 
 ## Testing Principles
 
+- Use this repository's installed Playwright for browser verification. Run it from the repository with `pnpm exec playwright` or `pnpm test:e2e`; do not use `pnpx` or `pnpm dlx`.
 - Tests must verify observable behavior or independently defined requirements.
 - Do not capture or assert screenshots in functional tests. Keep screenshot capture and visual verification separate from functional test suites.
 - Do not assert arbitrary CSS class names, computed style values, or exact pixel dimensions in functional tests (for example, colors, borders, spacing, or radii). Test observable behavior and accessibility instead; keep visual/design verification separate.

@@ -1,0 +1,49 @@
+:root {
+	font-family: system-ui, sans-serif;
+	color-scheme: light dark;
+}
+* {
+	box-sizing: border-box;
+}
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--fg);
+	line-height: 1.7;
+}
+button,
+input {
+	font: inherit;
+	color: inherit;
+	background: var(--surface);
+	border: 1px solid currentColor;
+	border-radius: 0.3rem;
+	padding: 0.35rem 0.6rem;
+}
+button,
+a {
+	cursor: pointer;
+}
+a {
+	color: inherit;
+	text-underline-offset: 0.2em;
+}
+:focus-visible {
+	outline: 3px solid var(--fg);
+	outline-offset: 3px;
+}
+[data-theme='dark'] {
+	color-scheme: dark;
+}
+[data-theme='light'] {
+	color-scheme: light;
+}
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		animation: none !important;
+		transition: none !important;
+	}
+}

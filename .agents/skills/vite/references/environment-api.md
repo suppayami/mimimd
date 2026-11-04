@@ -19,8 +19,8 @@ For SPA/MPA, nothing changes—options apply to the implicit `client` environmen
 
 ```ts
 export default defineConfig({
-  build: { sourcemap: false },
-  optimizeDeps: { include: ['lib'] },
+	build: { sourcemap: false },
+	optimizeDeps: { include: ['lib'] },
 })
 ```
 
@@ -28,16 +28,16 @@ export default defineConfig({
 
 ```ts
 export default defineConfig({
-  build: { sourcemap: false },  // Inherited by all environments
-  optimizeDeps: { include: ['lib'] },  // Client only
-  environments: {
-    // SSR environment
-    server: {},
-    // Edge runtime environment
-    edge: {
-      resolve: { noExternal: true },
-    },
-  },
+	build: { sourcemap: false }, // Inherited by all environments
+	optimizeDeps: { include: ['lib'] }, // Client only
+	environments: {
+		// SSR environment
+		server: {},
+		// Edge runtime environment
+		edge: {
+			resolve: { noExternal: true },
+		},
+	},
 })
 ```
 
@@ -47,12 +47,12 @@ Environments inherit top-level config. Some options (like `optimizeDeps`) only a
 
 ```ts
 interface EnvironmentOptions {
-  define?: Record<string, any>
-  resolve?: EnvironmentResolveOptions
-  optimizeDeps: DepOptimizationOptions
-  consumer?: 'client' | 'server'
-  dev: DevOptions
-  build: BuildOptions
+	define?: Record<string, any>
+	resolve?: EnvironmentResolveOptions
+	optimizeDeps: DepOptimizationOptions
+	consumer?: 'client' | 'server'
+	dev: DevOptions
+	build: BuildOptions
 }
 ```
 
@@ -64,11 +64,11 @@ Runtime providers can define custom environments:
 import { customEnvironment } from 'vite-environment-provider'
 
 export default defineConfig({
-  environments: {
-    ssr: customEnvironment({
-      build: { outDir: '/dist/ssr' },
-    }),
-  },
+	environments: {
+		ssr: customEnvironment({
+			build: { outDir: '/dist/ssr' },
+		}),
+	},
 })
 ```
 
@@ -82,7 +82,7 @@ Environments run modules through a runner. Two dev environment shapes exist:
 
 ```ts
 if (isRunnableDevEnvironment(server.environments.ssr)) {
-  const mod = await server.environments.ssr.runner.import('/src/entry-server.ts')
+	const mod = await server.environments.ssr.runner.import('/src/entry-server.ts')
 }
 ```
 
@@ -95,8 +95,8 @@ if (isRunnableDevEnvironment(server.environments.ssr)) {
 ```js [build.js]
 import { createBuilder } from 'vite'
 
-const builder = await createBuilder()      // build-time equivalent of createServer
-await builder.buildApp()                    // build every configured environment
+const builder = await createBuilder() // build-time equivalent of createServer
+await builder.buildApp() // build every configured environment
 // await builder.build(builder.environments.ssr) // or one at a time
 ```
 

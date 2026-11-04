@@ -12,7 +12,7 @@ description: Vite configuration patterns using vite.config.ts
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  // config options
+	// config options
 })
 ```
 
@@ -24,11 +24,11 @@ Export a function to access command and mode:
 
 ```ts
 export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
-  if (command === 'serve') {
-    return { /* dev config */ }
-  } else {
-    return { /* build config */ }
-  }
+	if (command === 'serve') {
+		return {/* dev config */}
+	} else {
+		return {/* build config */}
+	}
 })
 ```
 
@@ -39,8 +39,8 @@ export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
 
 ```ts
 export default defineConfig(async ({ command, mode }) => {
-  const data = await fetchSomething()
-  return { /* config */ }
+	const data = await fetchSomething()
+	return {/* config */}
 })
 ```
 
@@ -52,17 +52,17 @@ export default defineConfig(async ({ command, mode }) => {
 import { defineConfig, loadEnv } from 'vite'
 
 export default defineConfig(({ mode }) => {
-  // Load env files from cwd, include all vars (empty prefix)
-  const env = loadEnv(mode, process.cwd(), '')
-  
-  return {
-    define: {
-      __APP_ENV__: JSON.stringify(env.APP_ENV),
-    },
-    server: {
-      port: env.APP_PORT ? Number(env.APP_PORT) : 5173,
-    },
-  }
+	// Load env files from cwd, include all vars (empty prefix)
+	const env = loadEnv(mode, process.cwd(), '')
+
+	return {
+		define: {
+			__APP_ENV__: JSON.stringify(env.APP_ENV),
+		},
+		server: {
+			port: env.APP_PORT ? Number(env.APP_PORT) : 5173,
+		},
+	}
 })
 ```
 
@@ -74,8 +74,8 @@ Declare entry points once at the top level. Acts as the default for `build.rolld
 
 ```ts
 export default defineConfig({
-  input: 'src/main.ts',
-  // or multi-page: { main: 'index.html', nested: 'nested/index.html' }
+	input: 'src/main.ts',
+	// or multi-page: { main: 'index.html', nested: 'nested/index.html' }
 })
 ```
 
@@ -83,12 +83,12 @@ export default defineConfig({
 
 ```ts
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@': '/src',
-      '~': '/src',
-    },
-  },
+	resolve: {
+		alias: {
+			'@': '/src',
+			'~': '/src',
+		},
+	},
 })
 ```
 
@@ -98,10 +98,10 @@ The array form's `customResolver` was removed in Vite 8 — use a custom plugin 
 
 ```ts
 export default defineConfig({
-  define: {
-    __APP_VERSION__: JSON.stringify('1.0.0'),
-    __API_URL__: 'window.__backend_api_url',
-  },
+	define: {
+		__APP_VERSION__: JSON.stringify('1.0.0'),
+		__API_URL__: 'window.__backend_api_url',
+	},
 })
 ```
 
@@ -113,7 +113,7 @@ Values must be JSON-serializable or single identifiers. Non-strings auto-wrapped
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
-  plugins: [vue()],
+	plugins: [vue()],
 })
 ```
 
@@ -123,15 +123,15 @@ Plugins array is flattened; falsy values ignored.
 
 ```ts
 export default defineConfig({
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-    },
-  },
+	server: {
+		proxy: {
+			'/api': {
+				target: 'http://localhost:3000',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api/, ''),
+			},
+		},
+	},
 })
 ```
 
@@ -141,9 +141,9 @@ Default `'baseline-widely-available'` → `['chrome111', 'edge111', 'firefox114'
 
 ```ts
 export default defineConfig({
-  build: {
-    target: 'esnext', // or 'es2020', ['chrome90', 'firefox88']
-  },
+	build: {
+		target: 'esnext', // or 'es2020', ['chrome90', 'firefox88']
+	},
 })
 ```
 
@@ -172,7 +172,7 @@ For plain JS config files:
 ```js
 /** @type {import('vite').UserConfig} */
 export default {
-  // ...
+	// ...
 }
 ```
 
@@ -182,7 +182,7 @@ Or use `satisfies`:
 import type { UserConfig } from 'vite'
 
 export default {
-  // ...
+	// ...
 } satisfies UserConfig
 ```
 

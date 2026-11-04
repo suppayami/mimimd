@@ -17,7 +17,7 @@ import { expectTypeOf } from 'vitest'
 import { add } from './math'
 
 test('add returns number', () => {
-  expectTypeOf(add).returns.toBeNumber()
+	expectTypeOf(add).returns.toBeNumber()
 })
 ```
 
@@ -25,23 +25,23 @@ test('add returns number', () => {
 
 ```ts
 defineConfig({
-  test: {
-    typecheck: {
-      enabled: true,
-      
-      // Only type check
-      only: false,
-      
-      // Checker: 'tsc' or 'vue-tsc'
-      checker: 'tsc',
-      
-      // Include patterns
-      include: ['**/*.test-d.ts'],
-      
-      // tsconfig to use
-      tsconfig: './tsconfig.json',
-    },
-  },
+	test: {
+		typecheck: {
+			enabled: true,
+
+			// Only type check
+			only: false,
+
+			// Checker: 'tsc' or 'vue-tsc'
+			checker: 'tsc',
+
+			// Include patterns
+			include: ['**/*.test-d.ts'],
+
+			// tsconfig to use
+			tsconfig: './tsconfig.json',
+		},
+	},
 })
 ```
 
@@ -81,7 +81,7 @@ expectTypeOf(obj).toHaveProperty('name')
 
 ```ts
 function greet(name: string): string {
-  return `Hello, ${name}`
+	return `Hello, ${name}`
 }
 
 expectTypeOf(greet).toBeFunction()
@@ -96,9 +96,9 @@ expectTypeOf(greet).parameter(0).toBeString()
 
 ```ts
 interface User {
-  id: number
-  name: string
-  email?: string
+	id: number
+	name: string
+	email?: string
 }
 
 expectTypeOf<User>().toHaveProperty('id')
@@ -113,15 +113,20 @@ expectTypeOf({ id: 1, name: 'test' }).toExtend<User>()
 `toMatchTypeOf` is **deprecated** (expect-type v1.2+) — use `toExtend` for subset matching:
 
 ```ts
-interface A { x: number }
-interface B { x: number; y: string }
+interface A {
+	x: number
+}
+interface B {
+	x: number
+	y: string
+}
 
 // toExtend - subset matching (replaces toMatchTypeOf)
-expectTypeOf<B>().toExtend<A>()  // B extends A
+expectTypeOf<B>().toExtend<A>() // B extends A
 
 // toEqualTypeOf - exact match
-expectTypeOf<A>().not.toEqualTypeOf<B>()  // Not exact match
-expectTypeOf<A>().toEqualTypeOf<{ x: number }>()  // Exact match
+expectTypeOf<A>().not.toEqualTypeOf<B>() // Not exact match
+expectTypeOf<A>().toEqualTypeOf<{ x: number }>() // Exact match
 ```
 
 ## Branded Types
@@ -138,7 +143,7 @@ expectTypeOf<UserId>().not.toEqualTypeOf<number>()
 
 ```ts
 function identity<T>(value: T): T {
-  return value
+	return value
 }
 
 expectTypeOf(identity<string>).returns.toBeString()
@@ -162,17 +167,17 @@ Assert a value matches a type (no assertion at runtime):
 import { assertType } from 'vitest'
 
 function getUser(): User | null {
-  return { id: 1, name: 'test' }
+	return { id: 1, name: 'test' }
 }
 
 test('returns user', () => {
-  const result = getUser()
-  
-  // @ts-expect-error - should fail type check
-  assertType<string>(result)
-  
-  // Correct type
-  assertType<User | null>(result)
+	const result = getUser()
+
+	// @ts-expect-error - should fail type check
+	assertType<string>(result)
+
+	// Correct type
+	assertType<User | null>(result)
 })
 ```
 
@@ -182,10 +187,10 @@ Test that code produces type error:
 
 ```ts
 test('rejects wrong types', () => {
-  function requireString(s: string) {}
-  
-  // @ts-expect-error - number not assignable to string
-  requireString(123)
+	function requireString(s: string) {}
+
+	// @ts-expect-error - number not assignable to string
+	requireString(123)
 })
 ```
 
@@ -212,14 +217,14 @@ import { describe, expect, expectTypeOf, test } from 'vitest'
 import { createUser } from './user'
 
 describe('createUser', () => {
-  test('runtime: creates user', () => {
-    const user = createUser('John')
-    expect(user.name).toBe('John')
-  })
+	test('runtime: creates user', () => {
+		const user = createUser('John')
+		expect(user.name).toBe('John')
+	})
 
-  test('types: returns User type', () => {
-    expectTypeOf(createUser).returns.toExtend<{ name: string }>()
-  })
+	test('types: returns User type', () => {
+		expectTypeOf(createUser).returns.toExtend<{ name: string }>()
+	})
 })
 ```
 
@@ -232,7 +237,7 @@ describe('createUser', () => {
 - Use `@ts-expect-error` to test type errors
 - Run with `vitest typecheck` or `--typecheck`
 
-<!-- 
+<!--
 Source references:
 - https://vitest.dev/guide/testing-types.html
 - https://vitest.dev/api/expect-typeof.html

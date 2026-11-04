@@ -1,15 +1,17 @@
 # Spec: mimimd Markdown Reader
 
 ## Objective
+
 Build a Node.js CLI that serves one Markdown file or a folder as a polished reading website. Folder mode provides recursive navigation. Serve locally by default and allow explicit LAN sharing.
 
 Use matching Everforest Medium Light and Dark palettes across the page, code blocks, math, and diagrams. Use Shiki for code highlighting.
 
 ## Tech Stack
+
 - TypeScript, Node.js >=26.13.0, and pnpm. Declare the Node requirement in package engines and use a pnpm lockfile.
 - Set `minimumReleaseAge: 2880` in `pnpm-workspace.yaml`. This is a two-day minimum dependency release age, expressed in minutes.
 - Verify that Node.js 26.13.0 and compatible tooling are available before implementation validation. Do not silently lower the requested minimum.
-- Node HTTP server with a small route layer. No public hosting or authentication layer.
+- Hono with its Node HTTP adapter and a small route layer (approved implementation update). No public hosting or authentication layer.
 - Vue.js 3.5 single-file components with TypeScript and scoped CSS. Use semantic HTML.
 - Use Vue Router for document navigation, direct links, and browser history. This avoids maintaining a custom history implementation.
 - Vite with the Vue plugin for development and bundled browser assets; users do not run a build step.
@@ -23,6 +25,7 @@ Use matching Everforest Medium Light and Dark palettes across the page, code blo
 - Verify compatible dependency versions during implementation. No dependencies or existing conventions are present yet.
 
 ## Commands
+
 Proposed public interface:
 
 ```sh
@@ -62,14 +65,15 @@ pnpm pack
 
 Required script mappings:
 
-| Command | Script | Behavior |
-| --- | --- | --- |
-| `pnpm format` | `oxfmt --write .` | Format files in place. |
+| Command             | Script            | Behavior                                 |
+| ------------------- | ----------------- | ---------------------------------------- |
+| `pnpm format`       | `oxfmt --write .` | Format files in place.                   |
 | `pnpm format:check` | `oxfmt --check .` | Check formatting without changing files. |
-| `pnpm lint` | `eslint .` | Check lint rules without changing files. |
-| `pnpm lint:fix` | `eslint . --fix` | Apply available ESLint fixes. |
+| `pnpm lint`         | `eslint .`        | Check lint rules without changing files. |
+| `pnpm lint:fix`     | `eslint . --fix`  | Apply available ESLint fixes.            |
 
 ## Project Structure
+
 Proposed layout; the repository has no source code yet:
 
 ```text
@@ -87,6 +91,7 @@ tasks/          # Implementation plan and ordered checklist
 The published package includes compiled CLI/server code and browser assets. Runtime asset paths resolve relative to the installed package, not the caller's working directory.
 
 ### Reading and navigation
+
 - File mode opens the selected document and omits the folder sidebar. Its parent directory is the asset root, but sibling Markdown documents are not exposed as navigable documents.
 - Folder mode displays a collapsible directory tree, with directories before files and stable alphabetical sorting.
 - Ignore hidden entries and `node_modules`. Do not follow symbolic links. Apply these rules to direct requests as well as discovery.
@@ -101,6 +106,7 @@ The published package includes compiled CLI/server code and browser assets. Runt
 - Include a heading table of contents and clear active-document styling.
 
 ### Visual design and accessibility
+
 - Use Everforest Medium Light for light mode and Everforest Medium Dark for dark mode, including code highlighting.
 - Verify palette provenance and licensing. Do not treat a generic built-in Everforest theme as an exact Medium match. Supply custom Shiki theme definitions if required.
 - Default to the operating system theme. Offer a light/dark toggle and persist the user's choice locally.
@@ -110,6 +116,7 @@ The published package includes compiled CLI/server code and browser assets. Runt
 - Honor reduced-motion preferences. Show no dependency on externally hosted fonts or rendering assets.
 
 ### Markdown and live updates
+
 - Support CommonMark plus GitHub-style tables, task lists, strikethrough, and automatic links.
 - Render fenced code with Shiki. Unknown or absent language identifiers fall back to escaped plain text.
 - Support inline and block math with KaTeX and fenced `mermaid` diagrams.
@@ -121,6 +128,7 @@ The published package includes compiled CLI/server code and browser assets. Runt
 - Deleting the active document shows a missing-document state while keeping navigation usable.
 
 ### HTTP and file access
+
 - Canonicalize and validate paths before reading files. Reject traversal, malformed encodings, hidden entries, and symbolic-link access. Use the same checks for documents and assets.
 - Serve only indexed Markdown documents and an explicit set of static asset types needed by the reader, such as raster images, SVG images, and PDF attachments. Do not provide arbitrary directory or source-file downloads.
 - Serve SVG as image content with restrictive response headers, not as injected page markup. Do not expose local HTML or JavaScript files as reader content.
@@ -129,20 +137,21 @@ The published package includes compiled CLI/server code and browser assets. Runt
 - LAN access is explicitly unauthenticated. This tool is not a public file server.
 
 ## Code Style
+
 - Use strict TypeScript and ES modules. Type-check Vue components with `vue-tsc`.
 - Use Vue 3.5 single-file components with `<script setup lang="ts">` and `<style scoped>`.
 - Keep component styles scoped. Use scoped deep selectors for sanitized Markdown inserted with `v-html`; never compile document content as Vue templates. Limit global CSS to shared theme tokens, document defaults, and required vendor styles.
 - Configure Oxfmt in `.oxfmtrc.json` with these explicit settings:
 
-  ```json
-  {
-    "useTabs": true,
-    "tabWidth": 4,
-    "singleQuote": true,
-    "semi": false,
-    "sortPackageJson": false
-  }
-  ```
+```json
+{
+	"useTabs": true,
+	"tabWidth": 4,
+	"singleQuote": true,
+	"semi": false,
+	"sortPackageJson": false
+}
+```
 
 - Use Oxfmt as the formatter. Set `stylistic: false` and `lessOpinionated: true` in `@antfu/eslint-config`, and explicitly set `curly: ['error', 'all']` in its rules. Do not enable competing ESLint formatting rules.
 - Provide separate lint, lint-fix, format, and format-check scripts with the exact mappings listed under Commands. CI runs `pnpm lint` and `pnpm format:check` without rewriting files.
@@ -152,6 +161,7 @@ The published package includes compiled CLI/server code and browser assets. Runt
 - Unexpected server errors are logged without exposing stack traces to browser clients. Expected input errors receive specific messages.
 
 ## Testing Strategy
+
 - Unit tests: argument parsing, tree ordering/filtering, default document selection, heading IDs, link resolution, Markdown features, theme mapping, and plain-text highlighting fallback.
 - Vitest integration tests: file/folder serving, direct URLs, nested paths, recursion controls, asset containment, missing paths, bad input, port conflicts, watcher events, and shutdown.
 - Vue component tests use Vitest and `@testing-library/vue`. Query by accessible role, label, and visible text. Test file-tree expansion, filtering, theme controls, table of contents, and empty/missing-document states through user interactions rather than component internals.
@@ -161,11 +171,13 @@ The published package includes compiled CLI/server code and browser assets. Runt
 - Package smoke test: install a built tarball in a temporary fixture and run the CLI from an unrelated directory without a source checkout or network rendering dependencies.
 
 ## Boundaries
+
 - Always: default to localhost; enforce the served-root boundary; use matching Everforest Medium variants; maintain accessible navigation; test observable user behavior.
 - Ask first: add a framework beyond the approved Vue/Vite stack, change the Node minimum or package manager, change theme family, allow raw HTML, follow symlinks, broaden file access, or introduce public hosting.
 - Never: execute Markdown as code; load project configuration as executable code; expose arbitrary local files; add editing, MDX, authentication, full-text search, wiki links, or static export to version one.
 
 ## Success Criteria
+
 1. A single command serves a supported Markdown file, with no sidebar and no user build step.
 2. A folder with nested Markdown files displays a stable collapsible tree. Filtering finds filenames and paths. `--no-recursive` removes nested documents from both navigation and direct access.
 3. Direct URLs and browser history reopen the correct document. Relative Markdown links, image paths, duplicate headings, spaces, and Unicode work.
@@ -179,6 +191,7 @@ The published package includes compiled CLI/server code and browser assets. Runt
 11. On Node.js >=26.13.0, pnpm installation, build, Vue/TypeScript type checks, lint, formatting checks, and tests pass. The UI uses Vue 3.5 with scoped component CSS. The resolved ESLint configuration disables stylistic rules, enables `lessOpinionated`, and enforces braces for all control statements.
 
 ## Open Questions
+
 - Package name `mimimd` and the listed CLI defaults are accepted for implementation; registry availability remains unverified.
 - Verify availability of the requested Node.js >=26.13.0 baseline and compatible dependency releases. Treat unavailable tooling as a validation blocker, not permission to substitute a different baseline.
 - Verify exact Everforest Medium palette source, license, and availability as Shiki themes before implementation. Custom themes are allowed to meet the confirmed visual requirement.

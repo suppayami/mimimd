@@ -9,16 +9,16 @@ Vite 8 replaces esbuild + Rollup with [Rolldown](https://rolldown.rs/) (Rust bun
 
 ## What Changed
 
-| Before (Vite 7) | After (Vite 8) |
-|-----------------|----------------|
-| esbuild (dev/JS transform) | Oxc Transformer |
-| esbuild (dep pre-bundling) | Rolldown |
-| esbuild (CSS minify) | Lightning CSS (default) |
-| Rollup (production build) | Rolldown |
-| `build.rollupOptions` | `build.rolldownOptions` |
-| `worker.rollupOptions` | `worker.rolldownOptions` |
+| Before (Vite 7)               | After (Vite 8)                 |
+| ----------------------------- | ------------------------------ |
+| esbuild (dev/JS transform)    | Oxc Transformer                |
+| esbuild (dep pre-bundling)    | Rolldown                       |
+| esbuild (CSS minify)          | Lightning CSS (default)        |
+| Rollup (production build)     | Rolldown                       |
+| `build.rollupOptions`         | `build.rolldownOptions`        |
+| `worker.rollupOptions`        | `worker.rolldownOptions`       |
 | `optimizeDeps.esbuildOptions` | `optimizeDeps.rolldownOptions` |
-| `esbuild` option | `oxc` option |
+| `esbuild` option              | `oxc` option                   |
 
 ## Backward Compatibility (Auto-Conversion)
 
@@ -44,12 +44,13 @@ Migrate to the new names; the compat shims will be removed in a future major. Re
 
 ```ts
 export default defineConfig({
-  build: {
-    rolldownOptions: {  // was rollupOptions
-      external: ['vue'],
-      output: { globals: { vue: 'Vue' } },
-    },
-  },
+	build: {
+		rolldownOptions: {
+			// was rollupOptions
+			external: ['vue'],
+			output: { globals: { vue: 'Vue' } },
+		},
+	},
 })
 ```
 
@@ -59,13 +60,14 @@ Prefer the top-level [`input`](../references/core-config.md) option over `build.
 
 ```ts
 export default defineConfig({
-  oxc: {  // was esbuild
-    jsx: {
-      runtime: 'classic',
-      pragma: 'h',
-      pragmaFrag: 'Fragment',
-    },
-  },
+	oxc: {
+		// was esbuild
+		jsx: {
+			runtime: 'classic',
+			pragma: 'h',
+			pragmaFrag: 'Fragment',
+		},
+	},
 })
 ```
 
@@ -75,13 +77,13 @@ export default defineConfig({
 
 ```ts
 export default defineConfig({
-  oxc: {
-    jsx: {
-      runtime: 'automatic',  // or 'classic'
-      importSource: 'react', // for automatic runtime
-    },
-    jsxInject: `import React from 'react'`,  // auto-inject
-  },
+	oxc: {
+		jsx: {
+			runtime: 'automatic', // or 'classic'
+			importSource: 'react', // for automatic runtime
+		},
+		jsxInject: `import React from 'react'`, // auto-inject
+	},
 })
 ```
 
@@ -89,10 +91,10 @@ export default defineConfig({
 
 ```ts
 export default defineConfig({
-  oxc: {
-    include: ['**/*.ts', '**/*.tsx'],
-    exclude: ['node_modules/**'],
-  },
+	oxc: {
+		include: ['**/*.ts', '**/*.tsx'],
+		exclude: ['node_modules/**'],
+	},
 })
 ```
 
@@ -139,7 +141,7 @@ Most Vite plugins work unchanged — Rolldown supports Rollup's plugin API. Roll
 
 ## Gradual Migration
 
-`rolldown-vite` is Vite 7 running on Rolldown *without* other Vite 8 changes — an intermediate step:
+`rolldown-vite` is Vite 7 running on Rolldown _without_ other Vite 8 changes — an intermediate step:
 
 ```bash
 # Step 1: swap vite for rolldown-vite on Vite 7 (npm alias in package.json)
@@ -156,11 +158,11 @@ When a framework depends on older Vite:
 
 ```json
 {
-  "pnpm": {
-    "overrides": {
-      "vite": "8.0.0"
-    }
-  }
+	"pnpm": {
+		"overrides": {
+			"vite": "8.0.0"
+		}
+	}
 }
 ```
 

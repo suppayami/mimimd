@@ -282,6 +282,7 @@ onUnmounted(() => {
 			<MarkdownView
 				v-else-if="document"
 				:html="document.html"
+				:frontmatter="document.frontmatter"
 				:path="document.path"
 				:active-path="active"
 				:revision="revision"

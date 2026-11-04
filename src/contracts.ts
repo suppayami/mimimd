@@ -17,7 +17,14 @@ export interface Heading {
 	depth: number
 }
 
+export interface Frontmatter {
+	properties: { name: string; value: string | string[]; structured?: boolean }[]
+	raw?: string
+	error?: string
+}
+
 export interface RenderedDocument {
 	html: string
 	headings: Heading[]
+	frontmatter?: Frontmatter
 }

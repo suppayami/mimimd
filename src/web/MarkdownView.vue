@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import type { Frontmatter } from '../contracts'
+import { nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { renderDiagrams } from './diagrams'
+import FrontmatterView from './FrontmatterView.vue'
 import { theme } from './theme'
 
-const props = defineProps<{ html: string; revision: number; path: string; activePath: string }>()
+const props = defineProps<{
+	html: string
+	frontmatter?: Frontmatter
+	revision: number
+	path: string
+	activePath: string
+}>()
 const emit = defineEmits<{ rendered: [path: string, scroll: number] }>()
 const article = ref<HTMLElement>()
 const staging = ref<HTMLElement>()
 const rendering = ref(false)
 const displayedTheme = ref(theme.value)
+const displayedFrontmatter = shallowRef<Frontmatter>()
 let generation = 0
 
 onBeforeUnmount(() => {
@@ -16,8 +25,16 @@ onBeforeUnmount(() => {
 })
 
 watch(
-	() => [props.html, props.revision, props.path, theme.value, props.activePath] as const,
-	async ([html, revision, path, mode, activePath]) => {
+	() =>
+		[
+			props.html,
+			props.revision,
+			props.path,
+			theme.value,
+			props.activePath,
+			props.frontmatter,
+		] as const,
+	async ([html, revision, path, mode, activePath, frontmatter]) => {
 		const token = ++generation
 		rendering.value = true
 		if (path !== activePath) {
@@ -49,8 +66,12 @@ watch(
 			const scroll = window.scrollY
 			article.value.replaceChildren(...prepared.childNodes)
 			displayedTheme.value = mode
+			displayedFrontmatter.value = frontmatter
 			rendering.value = false
-			emit('rendered', path, scroll)
+			await nextTick()
+			if (token === generation) {
+				emit('rendered', path, scroll)
+			}
 		} finally {
 			prepared.remove()
 		}
@@ -59,6 +80,7 @@ watch(
 )
 </script>
 <template>
+	<FrontmatterView v-if="displayedFrontmatter" :key="path" :frontmatter="displayedFrontmatter" />
 	<article
 		ref="article"
 		:class="{ dark: displayedTheme === 'dark' }"

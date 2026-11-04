@@ -1,11 +1,12 @@
 import type { Element, Root } from 'hast'
-import type { RenderedDocument } from '../contracts.js'
+import type { Frontmatter, RenderedDocument } from '../contracts.js'
 import { posix } from 'node:path'
 import { toText } from 'hast-util-to-text'
 import rehypeKatex from 'rehype-katex'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import rehypeStringify from 'rehype-stringify'
+import remarkFrontmatter from 'remark-frontmatter'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import remarkParse from 'remark-parse'
@@ -13,6 +14,7 @@ import remarkRehype from 'remark-rehype'
 import { bundledLanguages, createHighlighter } from 'shiki'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
+import { isMap, isScalar, isSeq, parseDocument, stringify } from 'yaml'
 import { themes } from '../themes/everforest.js'
 
 const highlighter = createHighlighter({
@@ -22,12 +24,64 @@ const highlighter = createHighlighter({
 
 const encodePath = (p: string) => p.split('/').map(encodeURIComponent).join('/')
 
+function readFrontmatter(source: string): Frontmatter {
+	const parsed = parseDocument(source)
+	if (parsed.errors.length) {
+		return { properties: [], raw: source, error: parsed.errors[0]!.message }
+	}
+
+	if (!isMap(parsed.contents)) {
+		return { properties: [], raw: source }
+	}
+
+	return {
+		properties: parsed.contents.items.map(({ key, value }) => {
+			const name = isScalar(key)
+				? String(key.value)
+				: stringify(key, { verifyAliasOrder: false }).trimEnd()
+			if (isScalar(value) || value === null) {
+				return { name, value: String(value === null ? null : value.value) }
+			}
+
+			if (isSeq(value) && value.items.length) {
+				const items = value.items.flatMap((item) =>
+					isScalar(item) ? [String(item.value)] : [],
+				)
+				if (items.length === value.items.length) {
+					return { name, value: items }
+				}
+			}
+
+			// Serialize YAML nodes directly: aliases are displayed, never expanded or executed.
+			return {
+				name,
+				value: stringify(value, { verifyAliasOrder: false }).trimEnd(),
+				structured: true,
+			}
+		}),
+	}
+}
+
 export async function renderMarkdown(source: string, document: string): Promise<RenderedDocument> {
 	const headings: RenderedDocument['headings'] = []
+	let frontmatter: Frontmatter | undefined
 	const highlight = await highlighter
 
 	const result = await unified()
 		.use(remarkParse)
+		.use(remarkFrontmatter)
+		.use(() => (tree) => {
+			visit(tree, (node) => {
+				if (
+					node.type === 'yaml' &&
+					'value' in node &&
+					typeof node.value === 'string' &&
+					node.value.trim()
+				) {
+					frontmatter = readFrontmatter(node.value)
+				}
+			})
+		})
 		.use(remarkGfm)
 		.use(remarkMath)
 		.use(remarkRehype)
@@ -134,5 +188,5 @@ export async function renderMarkdown(source: string, document: string): Promise<
 		.use(rehypeStringify)
 		.process(source)
 
-	return { html: String(result), headings }
+	return { html: String(result), headings, ...(frontmatter && { frontmatter }) }
 }

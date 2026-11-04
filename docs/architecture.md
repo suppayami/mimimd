@@ -54,14 +54,14 @@ File mode exposes only the selected Markdown document and hides file navigation.
 
 ## HTTP boundary
 
-| Route                               | Purpose                                                                                                              |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `/`, `/doc/<encoded-relative-path>` | Serve the browser shell, including direct loads and history navigation.                                              |
-| `/api/index`                        | Return mode, eligible tree, document paths, and default document.                                                    |
-| `/api/document?path=...`            | Verify index membership, read the document, and return `{ html, headings }`. With no path, use the default document. |
-| `/content/<encoded-relative-path>`  | Serve allowlisted local images and PDF attachments through checked filesystem reads.                                 |
-| `/ui/*`                             | Serve the installed package's bundled JavaScript, CSS, fonts, and other UI assets.                                   |
-| `/events`                           | Notify connected browsers of filesystem changes through SSE.                                                         |
+| Route                               | Purpose                                                                                                                            |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `/`, `/doc/<encoded-relative-path>` | Serve the browser shell, including direct loads and history navigation.                                                            |
+| `/api/index`                        | Return mode, eligible tree, document paths, and default document.                                                                  |
+| `/api/document?path=...`            | Verify index membership, read the document, and return `{ html, headings, frontmatter? }`. With no path, use the default document. |
+| `/content/<encoded-relative-path>`  | Serve allowlisted local images and PDF attachments through checked filesystem reads.                                               |
+| `/ui/*`                             | Serve the installed package's bundled JavaScript, CSS, fonts, and other UI assets.                                                 |
+| `/events`                           | Notify connected browsers of filesystem changes through SSE.                                                                       |
 
 Document identity uses root-relative paths rather than generated numeric IDs. URL path segments are encoded individually, with fragments kept separate. Relative Markdown links become reader routes; local image and attachment links become content routes. A reader URL alone does not grant access: the document API still checks eligibility.
 
@@ -71,14 +71,16 @@ Bundled UI assets resolve relative to the installed server module, not the calle
 
 ```text
 Markdown source
-  -> remark parsing + GFM + math syntax
+  -> remark parsing + YAML frontmatter extraction + GFM + math syntax
   -> Markdown tree to HTML tree (raw HTML disabled)
   -> explicit sanitization schema
   -> unique heading IDs and heading collection
   -> local URL rewriting and Shiki code highlighting
   -> KaTeX math output, with trust disabled
-  -> serialized HTML + heading metadata
+  -> serialized HTML + heading metadata + optional frontmatter properties
 ```
+
+YAML frontmatter is parsed separately using `remark-frontmatter` and `yaml`, then displayed by `FrontmatterView.vue` with Vue text interpolation. It never enters rendered HTML or the heading outline. Nested YAML nodes and aliases are serialized without alias expansion. Malformed or non-mapping frontmatter is preserved as text; the Markdown body still renders. The browser commits frontmatter alongside the corresponding prepared article.
 
 `unified` composes this pipeline. `unist-util-visit` walks tree nodes for transformations, while `hast-util-to-text` extracts heading labels and code contents without treating nested markup as source text.
 

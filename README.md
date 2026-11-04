@@ -26,6 +26,8 @@ Folder mode offers expandable directories, filename/path filtering, heading link
 
 CommonMark/GFM, task lists, Shiki code, KaTeX math and strict Mermaid diagrams render locally without CDN requests. Unknown code languages remain plain text. Raw HTML, MDX, diagram directives and click actions are disabled. Content, tree and image changes update automatically.
 
+YAML frontmatter at the start of a document appears in a collapsible **Document properties** panel. Scalar lists display as chips; nested values remain YAML. Metadata is displayed as text, not HTML, and is excluded from the page outline. Invalid YAML remains visible as source without preventing the document from rendering.
+
 Hidden entries, node_modules, secrets directories, key files and symlinks are excluded. Only indexed .md/.markdown documents are readable. Assets are limited to PNG/JPEG/GIF/WebP/AVIF/ICO/SVG images and PDF attachments within the root; nested assets remain available in shallow mode. SVG responses are sandboxed; PDF downloads are attachments. Local HTML, JavaScript and arbitrary files are never served as user content.
 
 ## Development
